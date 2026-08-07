@@ -28,17 +28,27 @@ compatibility jobs focus on 3.12/3.13 with the ansible-core pins above.
 | --- | --- |
 | ansible-lint | `26.6.0` |
 | Molecule | `26.6.0` |
-| molecule-plugins | `23.7.0` (with `[docker]`) |
-| yamllint | `1.37.1` |
+| molecule-plugins | `26.7.15` (with `[docker]`) |
+| yamllint | `1.38.0` |
 | pytest | `8.4.1` |
 
 ## Collections
 
-| Collection | Range |
-| --- | --- |
-| `community.docker` | `>=3.12.0,<5.0.0` |
+| Collection | Range | Why |
+| --- | --- | --- |
+| `community.docker` | `>=3.12.0,<5.0.0` | Molecule create/destroy playbooks |
+| `ansible.posix` | `>=1.4.0,<3.0.0` | Required by `molecule-plugins[docker]` |
 
-Used for Molecule create/destroy. Role logic prefers `ansible.builtin`.
+Role logic prefers `ansible.builtin`.
+
+## ansible-lint production profile
+
+Result for v1.0.0: **PASS with two documented scoped exceptions** (not zero exclusions):
+
+1. `var-naming[no-role-prefix]` — intentional project-wide `aial_` public prefix
+2. `meta-runtime[unsupported-version]` — ansible-lint 26.6.0 catalog lists through `>=2.19.0` only; re-verified that removing the skip fails on `requires_ansible: ">=2.20.0"` even though 2.20/2.21 are the tested targets
+
+See `docs/security-audit-v1.0.0.md`.
 
 ## Molecule image digests
 

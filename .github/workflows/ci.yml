@@ -82,7 +82,7 @@ jobs:
             "jsonschema==4.26.0" \
             "PyYAML==6.0.2"
           ansible-galaxy collection install -r requirements.yml
-          python -c "import ansible; print(ansible.__version__)"
+          python -c "import ansible, sys; print('MATRIX_ANSIBLE_CORE', ansible.__version__); print('MATRIX_PYTHON', sys.version)"
 
       - name: Collection build
         run: |
@@ -119,14 +119,22 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install -r requirements-dev.txt
           ansible-galaxy collection install -r requirements.yml -p collections
+          python -c "import ansible; print('ansible-core', ansible.__version__)"
+          molecule --version
           docker version
           docker info
 
       - name: Molecule test baseline
-        run: molecule test -s baseline
+        run: |
+          set -euo pipefail
+          molecule test -s baseline
+          echo "BASELINE_MOLECULE_COMPLETE"
 
       - name: Molecule test orchestration
-        run: molecule test -s orchestration
+        run: |
+          set -euo pipefail
+          molecule test -s orchestration
+          echo "ORCHESTRATION_MOLECULE_COMPLETE"
 
   package:
     name: Collection package artifact

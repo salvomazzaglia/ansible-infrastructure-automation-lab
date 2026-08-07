@@ -46,15 +46,16 @@ systemd). Re-run `validate-repository.py` after any future edit.
 
 ## ansible-lint exclusions (narrow)
 
-`.ansible-lint` uses profile `production` with two intentional skips:
+`.ansible-lint` uses profile `production` with **two intentional scoped skips**
+(this is **not** a zero-exclusion result):
 
-| Skip | Reason |
-| --- | --- |
-| `var-naming[no-role-prefix]` | Public variables use the project-wide `aial_` prefix instead of each role directory name; argument specs still validate types and choices. |
-| `meta-runtime[unsupported-version]` | ansible-lint 26.6.0's embedded supported-version list lags ansible-core 2.20/2.21 while `meta/runtime.yml` correctly requires `>=2.20.0`. |
+| Skip | Scope | Re-verified 2026-08-07 | Reason |
+| --- | --- | --- | --- |
+| `var-naming[no-role-prefix]` | global skip_list entry only for this rule id | Yes — public API uses `aial_*` across roles | Argument specs still enforce types/choices; other var-naming checks remain active |
+| `meta-runtime[unsupported-version]` | global skip_list entry only for this rule id | Yes — removing it fails: linter catalog lists `>=2.15.0`…`>=2.19.0` only | `meta/runtime.yml` correctly requires `>=2.20.0`; project tested on 2.20.7 and 2.21.2 |
 
-No broad skips for syntax-check, fqcn, package-latest, risky-shell-pipe,
-command-instead-of-module, no-changed-when, or no-handler.
+No skips for: syntax-check, fqcn, package-latest, risky-shell-pipe,
+command-instead-of-module, no-changed-when, no-handler, or risky-file-permissions.
 
 ## Accepted false positives / documentation mentions
 
