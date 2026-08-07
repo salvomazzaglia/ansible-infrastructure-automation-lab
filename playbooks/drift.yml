@@ -1,0 +1,148 @@
+---
+# Drift collection via check mode.
+#
+# Runs baseline and security roles with check_mode enabled and records
+# per-host change indicators for later drift reporting.
+#
+# Status vocabulary (documentation):
+#   compliant | change_required | unavailable | failed | skipped
+#
+# Usage:
+#   ansible-playbook \
+#     --inventory inventories/synthetic/hosts.yml \
+#     --check --diff \
+#     playbooks/drift.yml
+
+- name: Drift detection — check-mode collection
+  hosts: all
+  gather_facts: true
+  become: true
+  check_mode: true
+  diff: true
+  vars:
+    aial_drift_roles:
+      - common
+      - package_management
+      - accounts
+      - time_sync
+      - logging
+      - ssh_hardening
+      - automatic_updates
+      - firewall_policy
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Initialize drift collection bag
+      ansible.builtin.set_fact:
+        aial_drift_results: []
+      tags:
+        - drift
+
+    - name: Preview common for drift
+      ansible.builtin.import_role:
+        name: common
+      tags:
+        - common
+        - drift
+
+    - name: Preview package_management for drift
+      ansible.builtin.import_role:
+        name: package_management
+      tags:
+        - package_management
+        - drift
+
+    - name: Preview accounts for drift
+      ansible.builtin.import_role:
+        name: accounts
+      tags:
+        - accounts
+        - drift
+
+    - name: Preview time_sync for drift
+      ansible.builtin.import_role:
+        name: time_sync
+      tags:
+        - time_sync
+        - drift
+
+    - name: Preview logging for drift
+      ansible.builtin.import_role:
+        name: logging
+      tags:
+        - logging
+        - drift
+
+    - name: Preview ssh_hardening for drift
+      ansible.builtin.import_role:
+        name: ssh_hardening
+      tags:
+        - ssh_hardening
+        - drift
+
+    - name: Preview automatic_updates for drift
+      ansible.builtin.import_role:
+        name: automatic_updates
+      tags:
+        - automatic_updates
+        - drift
+
+    - name: Preview firewall_policy for drift
+      ansible.builtin.import_role:
+        name: firewall_policy
+      tags:
+        - firewall_policy
+        - drift
+
+    - name: Record drift collection summary for host
+      ansible.builtin.set_fact:
+        aial_drift_summary:
+          host: "{{ inventory_hostname }}"
+          environment: "{{ aial_environment }}"
+          mode: check
+          roles: "{{ aial_drift_roles }}"
+          note: >-
+            Drift signals come from check-mode changed results.
+            This is not a compliance or vulnerability claim.
+      tags:
+        - drift
+
+    - name: Emit drift collection summary
+      ansible.builtin.debug:
+        var: aial_drift_summary
+      tags:
+        - drift
+
+- name: Drift detection — web tier check-mode collection
+  hosts: web
+  gather_facts: true
+  become: true
+  check_mode: true
+  diff: true
+  serial: 1
+  tasks:
+    - name: Run preflight safety gates for web drift
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Preview web_service for drift
+      ansible.builtin.import_role:
+        name: web_service
+      tags:
+        - web_service
+        - drift
+
+    - name: Record web drift note
+      ansible.builtin.debug:
+        msg: >-
+          Drift check for {{ inventory_hostname }} web_service complete
+          (check mode; synthetic inventory).
+      tags:
+        - web_service
+        - drift

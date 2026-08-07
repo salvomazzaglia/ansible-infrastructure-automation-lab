@@ -1,0 +1,25 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.logging
+# Variable prefix: aial_logging_
+# Remote forwarding disabled by default.
+# Examples use logs.example.invalid only.
+
+aial_logging_manage: true
+aial_logging_journald_dropin_path: /etc/systemd/journald.conf.d/50-aial-journald.conf
+
+aial_logging_storage: persistent
+aial_logging_compress: true
+aial_logging_system_max_use: 500M
+aial_logging_runtime_max_use: 100M
+aial_logging_max_retention_sec: 1209600  # 14 days
+aial_logging_max_file_sec: 86400
+
+aial_logging_forward_to_syslog: false
+aial_logging_forward_to_wall: false
+aial_logging_forward_to_remote: false
+
+# Explicit remote only — documentation host; never applied unless forward_to_remote true
+aial_logging_remote_host: logs.example.invalid
+aial_logging_remote_port: 514
+aial_logging_remote_protocol: udp
+aial_logging_rsyslog_forward_path: /etc/rsyslog.d/50-aial-remote.conf

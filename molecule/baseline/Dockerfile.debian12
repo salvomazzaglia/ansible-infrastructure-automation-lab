@@ -1,0 +1,28 @@
+# Local Molecule image derived from pinned debian:12-slim digest.
+# Never uses :latest. Adds systemd + python for ansible.builtin.service.
+FROM debian@sha256:abd67ffcfa541b485a3dff59865ab629aa048a6c613e639d36e7456b0b229241
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    container=docker
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        systemd \
+        systemd-sysv \
+        python3 \
+        python3-apt \
+        sudo \
+        ca-certificates \
+        procps \
+        dbus \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -f /lib/systemd/system/multi-user.target.wants/* \
+    && rm -f /etc/systemd/system/*.wants/* \
+    && rm -f /lib/systemd/system/local-fs.target.wants/* \
+    && rm -f /lib/systemd/system/sockets.target.wants/*udev* \
+    && rm -f /lib/systemd/system/sockets.target.wants/*initctl* \
+    && rm -f /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
+    && rm -f /lib/systemd/system/systemd-update-utmp*
+
+CMD ["/lib/systemd/systemd"]

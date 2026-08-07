@@ -1,0 +1,99 @@
+---
+# Assert baseline role artifacts on ephemeral containers (file/config focused).
+
+- name: Verify baseline Molecule outcomes
+  hosts: molecule
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Stat expected managed files
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /etc/motd
+        - /etc/issue.net
+        - /etc/aial/managed.marker
+        - /opt/aial
+        - /etc/ssh/sshd_config.d/50-aial-hardening.conf
+        - /etc/aial/firewall/rendered.nft
+        - /etc/aial/firewall/last-validated.json
+        - /etc/apt/apt.conf.d/20auto-upgrades
+        - /etc/apt/apt.conf.d/50unattended-upgrades-aial
+        - /etc/systemd/journald.conf.d/50-aial-journald.conf
+        - /etc/chrony/chrony.conf
+      register: aial_verify_stats
+
+    - name: Assert managed files exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists | bool
+        fail_msg: "Missing expected path {{ item.item }}"
+      loop: "{{ aial_verify_stats.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Read MOTD content
+      ansible.builtin.slurp:
+        src: /etc/motd
+      register: aial_verify_motd
+
+    - name: Assert MOTD branding
+      ansible.builtin.assert:
+        that:
+          - "'ANSIBLE INFRASTRUCTURE AUTOMATION LAB' in (aial_verify_motd.content | b64decode)"
+        fail_msg: MOTD does not contain expected lab branding.
+
+    - name: Read SSH hardening drop-in
+      ansible.builtin.slurp:
+        src: /etc/ssh/sshd_config.d/50-aial-hardening.conf
+      register: aial_verify_ssh
+
+    - name: Assert SSH hardening keys
+      ansible.builtin.assert:
+        that:
+          - "'PasswordAuthentication no' in (aial_verify_ssh.content | b64decode)"
+          - "'PermitRootLogin yes' not in (aial_verify_ssh.content | b64decode)"
+        fail_msg: SSH hardening drop-in missing expected settings.
+
+    - name: Read rendered firewall policy
+      ansible.builtin.slurp:
+        src: /etc/aial/firewall/rendered.nft
+      register: aial_verify_fw
+
+    - name: Assert firewall rendered artifact (apply left false)
+      ansible.builtin.assert:
+        that:
+          - aial_verify_fw.content is defined
+          - (aial_verify_fw.content | b64decode | length) > 0
+          - aial_firewall_apply | bool == false
+        fail_msg: Firewall rendered policy missing or apply unexpectedly enabled.
+
+    - name: Read firewall validation metadata
+      ansible.builtin.slurp:
+        src: /etc/aial/firewall/last-validated.json
+      register: aial_verify_fw_meta
+
+    - name: Assert firewall metadata records apply=false
+      ansible.builtin.assert:
+        that:
+          - "'\"apply\": false' in (aial_verify_fw_meta.content | b64decode)"
+          - "'\"validated\": true' in (aial_verify_fw_meta.content | b64decode)"
+        fail_msg: Firewall metadata does not confirm validated render-only mode.
+
+    - name: Assert laboratory operator account exists
+      ansible.builtin.getent:
+        database: passwd
+        key: aial_ops
+
+    - name: Assert baseline packages are present
+      ansible.builtin.command:
+        cmd: dpkg-query -W -f='${Status}' {{ item }}
+      register: aial_verify_pkgs
+      # intentional: read-only check; no host change expected
+      changed_when: false
+      failed_when: "'install ok installed' not in aial_verify_pkgs.stdout"
+      loop:
+        - ca-certificates
+        - curl
+        - chrony
+        - unattended-upgrades

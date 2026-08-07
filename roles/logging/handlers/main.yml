@@ -1,0 +1,13 @@
+---
+# handlers file for salvomazzaglia.infrastructure_automation.logging
+
+- name: Restart systemd-journald
+  ansible.builtin.service:
+    name: systemd-journald
+    state: restarted
+
+- name: Restart rsyslog
+  ansible.builtin.service:
+    name: rsyslog
+    state: restarted
+  failed_when: false

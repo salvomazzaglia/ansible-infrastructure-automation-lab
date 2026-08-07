@@ -1,0 +1,27 @@
+---
+profile: production
+exclude_paths:
+  - .venv/
+  - venv/
+  - .ansible/
+  - .molecule/
+  - dist/
+  - build/
+  - reports/
+  - artifacts/
+  - examples/
+  - tests/
+  - scripts/
+  - docs/
+  - changelogs/.plugin-cache.yaml
+
+# Prefer zero exclusions. Project-wide public variables use the aial_ prefix
+# (not per-role directory name). Documented in docs/security-audit-v1.0.0.md.
+# ansible-lint 26.6.0 supported-version list lags ansible-core 2.20/2.21 while
+# meta/runtime.yml correctly requires ">=2.20.0".
+skip_list:
+  - var-naming[no-role-prefix]
+  - meta-runtime[unsupported-version]
+
+warn_list: []
+offline: false

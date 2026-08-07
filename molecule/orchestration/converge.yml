@@ -1,0 +1,76 @@
+---
+# Serial web deployment with simulated LB pool transitions (documentation state).
+# Pool drain/restore is recorded in markers only so converge stays idempotent:
+# web_service always applies with aial_web_pool_member_state=in_service.
+
+- name: Rolling web service deployment (Molecule)
+  hosts: web
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: "{{ playbook_dir }}/../../playbooks/tasks/preflight.yml"
+
+    - name: Apply common marker used by health checks
+      ansible.builtin.import_role:
+        name: common
+
+    - name: Apply package management (includes nginx present list)
+      ansible.builtin.import_role:
+        name: package_management
+
+    - name: Simulate remove host from synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_molecule_pool_phase: draining
+
+    - name: Record synthetic pool drain
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_molecule_pool_phase }}
+          (service apply remains in_service for idempotence)
+
+    - name: Persist drain transition marker
+      ansible.builtin.copy:
+        content: |
+          phase=drain
+          host={{ inventory_hostname }}
+          pool={{ aial_web_pool_name }}
+          simulated_member_state=draining
+          apply_member_state={{ aial_web_pool_member_state }}
+        dest: /opt/aial/state/pool-transition-drain.txt
+        mode: "0644"
+
+    - name: Apply web service role
+      ansible.builtin.import_role:
+        name: web_service
+
+    - name: Post-deploy local health verification
+      ansible.builtin.import_role:
+        name: service_health
+
+    - name: Simulate restore host to synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_molecule_pool_phase: in_service
+
+    - name: Record synthetic pool restore
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_molecule_pool_phase }}
+
+    - name: Persist restore transition marker
+      ansible.builtin.copy:
+        content: |
+          phase=restore
+          host={{ inventory_hostname }}
+          pool={{ aial_web_pool_name }}
+          member_state=in_service
+          last_transition=restore
+        dest: /opt/aial/state/pool-transition.txt
+        mode: "0644"
+
+    - name: Render firewall policy only (no nft apply)
+      ansible.builtin.import_role:
+        name: firewall_policy

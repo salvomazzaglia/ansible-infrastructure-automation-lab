@@ -1,0 +1,43 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.logging
+
+- name: Ensure journald drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ aial_logging_journald_dropin_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when: aial_logging_manage | bool
+
+- name: Deploy journald configuration drop-in
+  ansible.builtin.template:
+    src: journald.conf.j2
+    dest: "{{ aial_logging_journald_dropin_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart systemd-journald
+  when: aial_logging_manage | bool
+
+- name: Remove remote forward config when forwarding disabled
+  ansible.builtin.file:
+    path: "{{ aial_logging_rsyslog_forward_path }}"
+    state: absent
+  notify: Restart rsyslog
+  when:
+    - aial_logging_manage | bool
+    - not (aial_logging_forward_to_remote | bool)
+
+- name: Deploy remote rsyslog forward configuration
+  ansible.builtin.template:
+    src: rsyslog-remote.conf.j2
+    dest: "{{ aial_logging_rsyslog_forward_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart rsyslog
+  when:
+    - aial_logging_manage | bool
+    - aial_logging_forward_to_remote | bool
+    - aial_logging_remote_host | length > 0

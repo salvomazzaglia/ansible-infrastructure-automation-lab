@@ -1,0 +1,35 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.common
+# Variable prefix: aial_common_
+
+aial_common_manage_hostname: false
+aial_common_hostname: ""
+
+aial_common_timezone: UTC
+aial_common_locale: en_US.UTF-8
+
+aial_common_standard_dirs:
+  - path: /opt/aial
+    mode: "0755"
+  - path: /opt/aial/state
+    mode: "0755"
+  - path: /var/log/aial
+    mode: "0755"
+
+aial_common_motd: |
+  ============================================================
+  ANSIBLE INFRASTRUCTURE AUTOMATION LAB
+  SYNTHETIC DEMONSTRATION HOST — NOT A PRODUCTION SYSTEM
+  ============================================================
+
+aial_common_banner: |
+  Authorized synthetic laboratory access only.
+  This host is part of the Ansible Infrastructure Automation Lab.
+  Unauthorized use is prohibited.
+
+aial_common_manage_motd: true
+aial_common_manage_banner: true
+aial_common_config_marker_path: /etc/aial/managed.marker
+aial_common_config_marker: |
+  # Managed by salvomazzaglia.infrastructure_automation.common
+  # Synthetic demonstration configuration — do not use on production hosts.

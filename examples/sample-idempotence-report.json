@@ -1,0 +1,142 @@
+{
+  "schema": "automation-report",
+  "schema_version": "1.0.0",
+  "banner": "SYNTHETIC DEMONSTRATION DATA",
+  "generated_at": "2026-08-01T12:00:00Z",
+  "started_at": "2026-08-01T12:10:00Z",
+  "finished_at": "2026-08-01T12:10:18Z",
+  "duration_seconds": 18.0,
+  "playbook": "playbooks/site.yml",
+  "mode": "idempotence",
+  "check_mode": false,
+  "sanitized": true,
+  "security": {
+    "no_log_honored": true,
+    "secrets_redacted": true,
+    "result_payloads_omitted": true
+  },
+  "inventory": {
+    "groups": [
+      "web",
+      "app",
+      "database",
+      "monitoring",
+      "bastion"
+    ],
+    "host_count": 6,
+    "hosts": [
+      "web01.lab.example.invalid",
+      "web02.lab.example.invalid",
+      "app01.lab.example.invalid",
+      "db01.lab.example.invalid",
+      "mon01.lab.example.invalid",
+      "bastion01.lab.example.invalid"
+    ]
+  },
+  "roles": [
+    "common",
+    "package_management",
+    "accounts",
+    "ssh_hardening",
+    "time_sync",
+    "logging",
+    "automatic_updates",
+    "firewall_policy",
+    "web_service",
+    "service_health"
+  ],
+  "summary": {
+    "ok": 3,
+    "changed": 0,
+    "failures": 0,
+    "unreachable": 0,
+    "skipped": 0,
+    "unchanged": 3,
+    "tasks_recorded": 3
+  },
+  "recap": {
+    "web01.lab.example.invalid": {
+      "ok": 3,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "web02.lab.example.invalid": {
+      "ok": 3,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "app01.lab.example.invalid": {
+      "ok": 3,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    }
+  },
+  "tasks": [
+    {
+      "play": "Synthetic idempotence second run",
+      "host": "web01.lab.example.invalid",
+      "task": "Deploy nginx site configuration",
+      "role": "web_service",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.22,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic idempotence second run",
+      "host": "web02.lab.example.invalid",
+      "task": "Ensure SSH hardening template is applied",
+      "role": "ssh_hardening",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.17,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic idempotence second run",
+      "host": "app01.lab.example.invalid",
+      "task": "Ensure nftables baseline policy is present",
+      "role": "firewall_policy",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.14,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    }
+  ],
+  "idempotence": {
+    "second_run_changed": 0,
+    "passed": true,
+    "notes": "Second apply reported zero changes on synthetic hosts."
+  },
+  "limitations": [
+    "Synthetic demonstration data only.",
+    "Idempotence sample is illustrative; Molecule verifies roles separately."
+  ]
+}

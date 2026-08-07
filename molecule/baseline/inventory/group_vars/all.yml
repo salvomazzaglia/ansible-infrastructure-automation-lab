@@ -1,0 +1,84 @@
+---
+# Molecule-only safety gates — ephemeral containers, never real SSH fleets.
+aial_environment: molecule
+aial_safe_to_apply: true
+
+# common
+aial_common_manage_hostname: false
+aial_common_timezone: UTC
+aial_common_locale: en_US.UTF-8
+aial_common_manage_motd: true
+aial_common_manage_banner: true
+
+# package_management — present only (never latest)
+aial_packages_present:
+  - ca-certificates
+  - curl
+  - gnupg
+  - vim-tiny
+  - openssh-server
+  - chrony
+aial_packages_absent: []
+aial_packages_update_cache: true
+aial_packages_cache_valid_time: 3600
+aial_packages_held: []
+
+# accounts — placeholder keys are skipped by the role
+aial_accounts_groups:
+  - name: aial_operators
+    state: present
+    system: false
+  - name: aial_auditors
+    state: present
+    system: false
+aial_accounts_users:
+  - name: aial_ops
+    state: present
+    groups:
+      - aial_operators
+    shell: /bin/bash
+    create_home: true
+    home: /home/aial_ops
+    comment: Molecule lab operator account
+    ssh_authorized_keys:
+      - SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER
+
+# time_sync — prefer chrony (installed above) so systemd-timesyncd is optional
+aial_time_manage: true
+aial_time_prefer: chrony
+aial_time_timezone_hint: UTC
+aial_time_ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+# logging — no remote forwarding
+aial_logging_manage: true
+aial_logging_storage: persistent
+aial_logging_compress: true
+aial_logging_forward_to_remote: false
+
+# ssh_hardening
+aial_ssh_manage: true
+aial_ssh_permit_root_login: prohibit-password
+aial_ssh_password_authentication: false
+aial_ssh_pubkey_authentication: true
+aial_ssh_emergency_compatibility: false
+aial_ssh_service_name: ssh
+
+# automatic_updates — never reboot
+aial_autoupdate_manage: true
+aial_autoupdate_enabled: true
+aial_autoupdate_security_only: true
+aial_autoupdate_allow_reboot: false
+aial_autoupdate_automatic_reboot: false
+
+# firewall_policy — render/validate only (containers may lack nft)
+aial_firewall_manage: true
+aial_firewall_apply: false
+aial_firewall_default_inbound: drop
+aial_firewall_default_outbound: accept
+
+# web not in baseline
+aial_web_manage: false

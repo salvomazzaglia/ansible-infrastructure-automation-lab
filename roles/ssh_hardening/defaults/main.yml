@@ -1,0 +1,27 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.ssh_hardening
+# Variable prefix: aial_ssh_
+
+aial_ssh_manage: true
+aial_ssh_dropin_path: /etc/ssh/sshd_config.d/50-aial-hardening.conf
+
+# Default: prohibit-password (never yes)
+aial_ssh_permit_root_login: prohibit-password
+aial_ssh_password_authentication: false
+aial_ssh_pubkey_authentication: true
+aial_ssh_max_auth_tries: 3
+aial_ssh_login_grace_time: 30
+aial_ssh_x11_forwarding: false
+aial_ssh_allow_tcp_forwarding: false
+aial_ssh_client_alive_interval: 300
+aial_ssh_client_alive_count_max: 2
+aial_ssh_log_level: VERBOSE
+
+# Emergency compatibility mode relaxes selected settings for break-glass access
+aial_ssh_emergency_compatibility: false
+aial_ssh_emergency_permit_root_login: prohibit-password
+aial_ssh_emergency_password_authentication: false
+aial_ssh_emergency_allow_tcp_forwarding: true
+
+aial_ssh_validate_sshd: true
+aial_ssh_service_name: ssh

@@ -1,0 +1,60 @@
+---
+extends: default
+
+yaml-files:
+  - "*.yaml"
+  - "*.yml"
+  - ".yamllint"
+  - ".ansible-lint"
+
+ignore: |
+  .venv/
+  venv/
+  .ansible/
+  .molecule/
+  dist/
+  build/
+  reports/
+  artifacts/
+
+rules:
+  braces:
+    max-spaces-inside: 1
+    level: error
+  brackets:
+    max-spaces-inside: 1
+    level: error
+  colons:
+    max-spaces-after: 1
+    level: error
+  commas:
+    max-spaces-after: 1
+    level: error
+  comments:
+    require-starting-space: true
+    min-spaces-from-content: 1
+  comments-indentation: false
+  document-start:
+    present: true
+  empty-lines:
+    max: 2
+  hyphens:
+    max-spaces-after: 1
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  key-duplicates: enable
+  line-length:
+    max: 160
+    allow-non-breakable-words: true
+    allow-non-breakable-inline-mappings: true
+  new-line-at-end-of-file: enable
+  new-lines:
+    type: unix
+  octal-values:
+    forbid-implicit-octal: true
+    forbid-explicit-octal: true
+  trailing-spaces: enable
+  truthy:
+    allowed-values: ["true", "false", "yes", "no"]
+    check-keys: false

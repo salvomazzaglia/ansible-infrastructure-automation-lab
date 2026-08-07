@@ -1,0 +1,176 @@
+{
+  "schema": "automation-report",
+  "schema_version": "1.0.0",
+  "banner": "SYNTHETIC DEMONSTRATION DATA",
+  "generated_at": "2026-08-01T12:00:00Z",
+  "started_at": "2026-08-01T12:05:00Z",
+  "finished_at": "2026-08-01T12:05:45Z",
+  "duration_seconds": 45.0,
+  "playbook": "playbooks/site.yml",
+  "mode": "apply",
+  "check_mode": false,
+  "sanitized": true,
+  "security": {
+    "no_log_honored": true,
+    "secrets_redacted": true,
+    "result_payloads_omitted": true
+  },
+  "inventory": {
+    "groups": [
+      "web",
+      "app",
+      "database",
+      "monitoring",
+      "bastion"
+    ],
+    "host_count": 6,
+    "hosts": [
+      "web01.lab.example.invalid",
+      "web02.lab.example.invalid",
+      "app01.lab.example.invalid",
+      "db01.lab.example.invalid",
+      "mon01.lab.example.invalid",
+      "bastion01.lab.example.invalid"
+    ]
+  },
+  "roles": [
+    "common",
+    "package_management",
+    "accounts",
+    "ssh_hardening",
+    "time_sync",
+    "logging",
+    "automatic_updates",
+    "firewall_policy",
+    "web_service",
+    "service_health"
+  ],
+  "summary": {
+    "ok": 2,
+    "changed": 3,
+    "failures": 0,
+    "unreachable": 0,
+    "skipped": 0,
+    "unchanged": 2,
+    "tasks_recorded": 5
+  },
+  "recap": {
+    "web01.lab.example.invalid": {
+      "ok": 2,
+      "changed": 1,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "web02.lab.example.invalid": {
+      "ok": 2,
+      "changed": 1,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "app01.lab.example.invalid": {
+      "ok": 2,
+      "changed": 1,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "db01.lab.example.invalid": {
+      "ok": 2,
+      "changed": 1,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    }
+  },
+  "tasks": [
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "web01.lab.example.invalid",
+      "task": "Deploy nginx site configuration",
+      "role": "web_service",
+      "status": "changed",
+      "changed": true,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.44,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "web02.lab.example.invalid",
+      "task": "Deploy nginx site configuration",
+      "role": "web_service",
+      "status": "changed",
+      "changed": true,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.41,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "app01.lab.example.invalid",
+      "task": "Apply application firewall policy",
+      "role": "firewall_policy",
+      "status": "changed",
+      "changed": true,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.33,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "db01.lab.example.invalid",
+      "task": "Configure remote syslog forwarding",
+      "role": "logging",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.19,
+      "no_log": false,
+      "check_mode": false,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "web01.lab.example.invalid",
+      "task": "Set service account password",
+      "role": "accounts",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.08,
+      "no_log": true,
+      "check_mode": false,
+      "result": "REDACTED"
+    }
+  ],
+  "limitations": [
+    "Synthetic demonstration data only.",
+    "Apply sample illustrates changed vs ok outcomes without real hosts."
+  ]
+}

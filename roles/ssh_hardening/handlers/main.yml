@@ -1,0 +1,8 @@
+---
+# handlers file for salvomazzaglia.infrastructure_automation.ssh_hardening
+
+- name: Reload SSH
+  ansible.builtin.service:
+    name: "{{ aial_ssh_service_name }}"
+    state: reloaded
+  when: aial_ssh_sshd_present | default(false) | bool

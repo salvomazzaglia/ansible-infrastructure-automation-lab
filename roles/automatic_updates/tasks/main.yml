@@ -1,0 +1,64 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.automatic_updates
+
+- name: Assert Debian family for automatic updates
+  ansible.builtin.assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: automatic_updates supports Debian/Ubuntu only.
+  when: aial_autoupdate_manage | bool
+
+- name: Ensure unattended-upgrades package is present when enabled
+  ansible.builtin.apt:
+    name: "{{ aial_autoupdate_package_name }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when:
+    - aial_autoupdate_manage | bool
+    - aial_autoupdate_enabled | bool
+
+- name: Ensure report directory exists
+  ansible.builtin.file:
+    path: "{{ aial_autoupdate_report_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when:
+    - aial_autoupdate_manage | bool
+    - aial_autoupdate_enabled | bool
+
+- name: Deploy apt periodic auto-upgrades configuration
+  ansible.builtin.template:
+    src: 20auto-upgrades.j2
+    dest: "{{ aial_autoupdate_periodic_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  when: aial_autoupdate_manage | bool
+
+- name: Deploy unattended-upgrades policy
+  ansible.builtin.template:
+    src: 50unattended-upgrades-aial.j2
+    dest: "{{ aial_autoupdate_unattended_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  when: aial_autoupdate_manage | bool
+
+- name: Ensure unattended-upgrades service state matches policy
+  ansible.builtin.service:
+    name: unattended-upgrades
+    state: "{{ 'started' if (aial_autoupdate_enabled | bool) else 'stopped' }}"
+    enabled: "{{ aial_autoupdate_enabled | bool }}"
+  when: aial_autoupdate_manage | bool
+  failed_when: false
+
+- name: Document reboot policy (never reboot from this role by default)
+  ansible.builtin.debug:
+    msg: >-
+      Automatic reboot is
+      {{ 'permitted in config only' if (aial_autoupdate_allow_reboot | bool and aial_autoupdate_automatic_reboot | bool) else 'disabled' }}.
+      Handlers in this role never trigger host reboot.
+  when: aial_autoupdate_manage | bool

@@ -1,0 +1,3 @@
+# Managed by salvomazzaglia.infrastructure_automation.logging
+# Remote destination is explicitly configured (example host: logs.example.invalid).
+*.* {{ '@' if (aial_logging_remote_protocol | lower) == 'udp' else '@@' }}{{ aial_logging_remote_host }}:{{ aial_logging_remote_port | int }}

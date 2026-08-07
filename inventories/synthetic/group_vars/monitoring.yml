@@ -1,0 +1,36 @@
+---
+# Monitoring tier overrides — local logging emphasis, no web service.
+
+aial_web_manage: false
+
+aial_packages_present:
+  - ca-certificates
+  - curl
+  - gnupg
+  - vim-tiny
+
+aial_logging_system_max_use: 2G
+aial_logging_runtime_max_use: 200M
+aial_logging_max_retention_sec: 2592000  # 30 days
+aial_logging_forward_to_remote: false
+aial_logging_remote_host: logs.example.invalid
+
+aial_firewall_rules:
+  - id: allow-ssh-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 22
+    source: 203.0.113.0/24
+    comment: Synthetic lab SSH from documentation TEST-NET-3
+  - id: allow-metrics-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 9100
+    source: 203.0.113.0/24
+    comment: Synthetic metrics scrape from documentation TEST-NET-3
+
+aial_health_services: []
+aial_health_http_checks: []
+aial_health_config_validations: []

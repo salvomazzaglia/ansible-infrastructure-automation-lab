@@ -1,0 +1,55 @@
+# Ansible / Molecule runtime
+.ansible/
+.molecule/
+*.retry
+*.vault
+vault-password*
+.vault-password*
+
+# Private / local inventories (never track)
+inventory.local/
+inventories/private/
+inventories/production/
+group_vars/private/
+host_vars/private/
+
+# Secrets / keys
+*.pem
+*.key
+id_rsa*
+id_ed25519*
+.env
+.env.*
+*.secret
+*.token
+
+# Artifacts / reports (runtime)
+artifacts/
+reports/
+results/
+output/
+temp/
+tmp/
+dist/
+build/
+collections/
+*.tar.gz
+
+# Python
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db

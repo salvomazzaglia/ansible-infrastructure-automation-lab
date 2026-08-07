@@ -1,0 +1,42 @@
+---
+# Converge baseline + security roles against ephemeral Molecule hosts.
+
+- name: Converge baseline configuration
+  hosts: molecule
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: "{{ playbook_dir }}/../../playbooks/tasks/preflight.yml"
+
+    - name: Apply common baseline
+      ansible.builtin.import_role:
+        name: common
+
+    - name: Apply package management
+      ansible.builtin.import_role:
+        name: package_management
+
+    - name: Apply accounts
+      ansible.builtin.import_role:
+        name: accounts
+
+    - name: Apply SSH hardening
+      ansible.builtin.import_role:
+        name: ssh_hardening
+
+    - name: Apply time synchronization
+      ansible.builtin.import_role:
+        name: time_sync
+
+    - name: Apply logging
+      ansible.builtin.import_role:
+        name: logging
+
+    - name: Apply automatic updates policy
+      ansible.builtin.import_role:
+        name: automatic_updates
+
+    - name: Apply firewall policy (render only; aial_firewall_apply=false)
+      ansible.builtin.import_role:
+        name: firewall_policy

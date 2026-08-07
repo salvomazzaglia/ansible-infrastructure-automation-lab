@@ -1,0 +1,23 @@
+---
+# Soft cleanup of mutable lab artifacts before destroy (containers stay up).
+
+- name: Cleanup baseline Molecule artifacts
+  hosts: molecule
+  gather_facts: false
+  become: true
+  ignore_unreachable: true
+  tasks:
+    - name: Remove rendered firewall artifacts created by the run
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/aial/firewall/rendered.nft
+        - /etc/aial/firewall/last-validated.json
+      failed_when: false
+
+    - name: Document cleanup scope
+      ansible.builtin.debug:
+        msg: >-
+          Soft cleanup complete on {{ inventory_hostname }}.
+          Ephemeral container destroy remains the destroy.yml step.

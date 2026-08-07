@@ -1,0 +1,5 @@
+// Managed by salvomazzaglia.infrastructure_automation.automatic_updates
+APT::Periodic::Update-Package-Lists "{{ 1 if (aial_autoupdate_enabled | bool) else 0 }}";
+APT::Periodic::Unattended-Upgrade "{{ 1 if (aial_autoupdate_enabled | bool) else 0 }}";
+APT::Periodic::Download-Upgradeable-Packages "1";
+APT::Periodic::AutocleanInterval "7";

@@ -1,0 +1,8 @@
+---
+# handlers file for salvomazzaglia.infrastructure_automation.web_service
+
+- name: Restart synthetic web service
+  ansible.builtin.service:
+    name: "{{ aial_web_service_name }}"
+    state: restarted
+  when: aial_web_pool_member_state != 'out_of_service'

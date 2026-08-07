@@ -1,0 +1,62 @@
+---
+namespace: salvomazzaglia
+name: infrastructure_automation
+version: 1.0.0
+readme: README.md
+authors:
+  - Salvatore Mazzaglia <https://github.com/salvomazzaglia>
+description: >
+  Professional Ansible infrastructure automation laboratory demonstrating
+  configuration management, reusable roles, multi-host orchestration,
+  check mode, drift detection, and Molecule testing with synthetic inventories.
+license:
+  - MIT
+license_file: LICENSE
+tags:
+  - infrastructure
+  - linux
+  - system
+  - automation
+  - configuration_management
+dependencies: {}
+repository: https://github.com/salvomazzaglia/ansible-infrastructure-automation-lab
+documentation: https://github.com/salvomazzaglia/ansible-infrastructure-automation-lab/blob/main/docs/architecture.md
+homepage: https://github.com/salvomazzaglia/ansible-infrastructure-automation-lab
+issues: https://github.com/salvomazzaglia/ansible-infrastructure-automation-lab/issues
+build_ignore:
+  - .git
+  - .github
+  - .venv
+  - venv
+  - .pytest_cache
+  - .molecule
+  - .ansible
+  - artifacts
+  - reports
+  - results
+  - output
+  - temp
+  - tmp
+  - dist
+  - build
+  - "*.tar.gz"
+  - tests
+  - molecule
+  - docs
+  - examples
+  - scripts
+  - inventories
+  - schemas
+  - "*.retry"
+  - .ansible-lint
+  - .yamllint
+  - .editorconfig
+  - .gitattributes
+  - .gitignore
+  - CHANGELOG.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+  - VERSION
+  - requirements-dev.txt
+  - pyproject.toml
+  - ansible.cfg

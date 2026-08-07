@@ -1,0 +1,78 @@
+---
+argument_specs:
+  main:
+    short_description: Groups and users without passwords
+    description:
+      - Manages groups and users for the lab.
+      - Supports present, absent, and locked account states.
+      - SSH keys are optional; SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER is never installed.
+      - No password or root password management.
+    options:
+      aial_accounts_placeholder_key:
+        type: str
+        required: false
+        default: SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER
+        description: Sentinel value that must never be written to authorized_keys.
+      aial_accounts_groups:
+        type: list
+        elements: dict
+        required: false
+        description: Groups to manage.
+        options:
+          name:
+            type: str
+            required: true
+          state:
+            type: str
+            required: false
+            default: present
+            choices:
+              - present
+              - absent
+          system:
+            type: bool
+            required: false
+            default: false
+          gid:
+            type: int
+            required: false
+      aial_accounts_users:
+        type: list
+        elements: dict
+        required: false
+        description: Users to manage (never root).
+        options:
+          name:
+            type: str
+            required: true
+          state:
+            type: str
+            required: false
+            default: present
+            choices:
+              - present
+              - absent
+              - locked
+          shell:
+            type: str
+            required: false
+            default: /bin/bash
+          create_home:
+            type: bool
+            required: false
+            default: true
+          home:
+            type: str
+            required: false
+          comment:
+            type: str
+            required: false
+          groups:
+            type: list
+            elements: str
+            required: false
+          ssh_authorized_keys:
+            type: list
+            elements: str
+            required: false
+            description: Real keys only; placeholders are skipped.

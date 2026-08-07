@@ -1,0 +1,22 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.web_service
+# Variable prefix: aial_web_
+
+aial_web_manage: true
+aial_web_package: nginx
+aial_web_service_name: nginx
+aial_web_listen_port: 80
+aial_web_root: /var/www/aial-synthetic
+aial_web_index_path: /var/www/aial-synthetic/index.html
+aial_web_site_config_path: /etc/nginx/sites-available/aial-synthetic
+aial_web_site_enabled_path: /etc/nginx/sites-enabled/aial-synthetic
+aial_web_remove_default_site: true
+
+aial_web_page_title: ANSIBLE INFRASTRUCTURE AUTOMATION LAB
+aial_web_page_body: SYNTHETIC DEMONSTRATION SERVICE
+
+# Rolling deployment / pool state simulation (documentation only unless consumed by orchestrator)
+aial_web_pool_name: synthetic-web-pool
+aial_web_pool_member_state: in_service  # in_service | draining | out_of_service
+aial_web_rolling_batch_size: 1
+aial_web_rolling_enabled: false

@@ -1,0 +1,35 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.package_management
+
+- name: Assert Debian family for package management
+  ansible.builtin.assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: >-
+      package_management supports Debian/Ubuntu only
+      (got ansible_os_family={{ ansible_os_family }}).
+    success_msg: OS family Debian confirmed for package management.
+
+- name: Install baseline packages (state present, never latest)
+  ansible.builtin.apt:
+    name: "{{ aial_packages_present }}"
+    state: present
+    update_cache: "{{ aial_packages_update_cache | bool }}"
+    cache_valid_time: "{{ aial_packages_cache_valid_time | int }}"
+  when: aial_packages_present | length > 0
+
+- name: Remove packages marked absent
+  ansible.builtin.apt:
+    name: "{{ aial_packages_absent }}"
+    state: absent
+    purge: false
+  when: aial_packages_absent | length > 0
+
+- name: Hold packages when requested
+  ansible.builtin.dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  loop: "{{ aial_packages_held }}"
+  when: aial_packages_held | length > 0
+  loop_control:
+    label: "{{ item }}"

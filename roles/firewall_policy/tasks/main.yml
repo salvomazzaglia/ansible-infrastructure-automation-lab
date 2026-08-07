@@ -1,0 +1,127 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.firewall_policy
+
+- name: Ensure firewall state directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0750"
+    owner: root
+    group: root
+  loop:
+    - "{{ aial_firewall_policy_path | dirname }}"
+    - "{{ aial_firewall_rendered_path | dirname }}"
+    - "{{ aial_firewall_state_path | dirname }}"
+  when: aial_firewall_manage | bool
+
+- name: Collect firewall rule identifiers
+  ansible.builtin.set_fact:
+    aial_firewall_rule_ids: "{{ aial_firewall_rules | map(attribute='id') | list }}"
+  when: aial_firewall_manage | bool
+
+- name: Reject duplicate firewall rule IDs
+  ansible.builtin.assert:
+    that:
+      - aial_firewall_rule_ids | length == (aial_firewall_rule_ids | unique | length)
+    fail_msg: >-
+      Duplicate firewall rule IDs detected:
+      {{ aial_firewall_rule_ids | difference(aial_firewall_rule_ids | unique) }}.
+  when: aial_firewall_manage | bool
+
+- name: Validate each firewall rule
+  ansible.builtin.assert:
+    that:
+      - item.id is defined
+      - item.id | length > 0
+      - item.direction is defined
+      - item.direction in ['inbound', 'outbound']
+      - item.action is defined
+      - item.action in ['accept', 'drop', 'reject']
+      - item.protocol is defined
+      - (item.protocol | lower) in aial_firewall_allowed_protocols
+      - item.port is not defined or (item.port | int >= 1 and item.port | int <= 65535)
+      - item.source is defined
+      - item.source | length > 0
+      - not (item.source is match('^(10\\.|192\\.168\\.|172\\.(1[6-9]|2[0-9]|3[0-1])\\.)'))
+      - >-
+          item.source == 'any'
+          or item.source is match('^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(/(3[0-2]|[12]?[0-9]))?$')
+          or item.source is match('.*\\.example\\.invalid$')
+          or item.source is match('.*\\.invalid$')
+      - >-
+          not (aial_firewall_reject_implicit_allow_all | bool
+               and item.action == 'accept'
+               and item.source == '0.0.0.0/0'
+               and item.port is not defined)
+    fail_msg: >-
+      Malformed or unsafe firewall rule id={{ item.id | default('UNKNOWN') }}
+      protocol={{ item.protocol | default('?') }} port={{ item.port | default('?') }}
+      source={{ item.source | default('?') }}.
+      Rejected: bad port/protocol, RFC1918 source, impossible CIDR, or implicit allow-all.
+  loop: "{{ aial_firewall_rules }}"
+  loop_control:
+    label: "{{ item.id | default('missing-id') }}"
+  when: aial_firewall_manage | bool
+
+- name: Reject inbound accept-any without port (implicit allow-all)
+  ansible.builtin.assert:
+    that:
+      - not (
+          (aial_firewall_reject_implicit_allow_all | bool)
+          and item.direction == 'inbound'
+          and item.action == 'accept'
+          and item.source == 'any'
+          and item.port is not defined
+        )
+    fail_msg: >-
+      Implicit allow-all inbound rule rejected for id={{ item.id }}.
+      Specify a port or narrow the source.
+  loop: "{{ aial_firewall_rules }}"
+  loop_control:
+    label: "{{ item.id | default('missing-id') }}"
+  when: aial_firewall_manage | bool
+
+- name: Render firewall policy artifact
+  ansible.builtin.template:
+    src: policy.nft.j2
+    dest: "{{ aial_firewall_rendered_path }}"
+    mode: "0640"
+    owner: root
+    group: root
+  when: aial_firewall_manage | bool
+
+- name: Write last-validated firewall metadata
+  ansible.builtin.copy:
+    content: |
+      {
+        "validated": true,
+        "rule_count": {{ aial_firewall_rules | length }},
+        "default_inbound": "{{ aial_firewall_default_inbound }}",
+        "default_outbound": "{{ aial_firewall_default_outbound }}",
+        "apply": {{ aial_firewall_apply | bool | lower }},
+        "backend": "{{ aial_firewall_backend }}"
+      }
+    dest: "{{ aial_firewall_state_path }}"
+    mode: "0640"
+    owner: root
+    group: root
+  when: aial_firewall_manage | bool
+
+- name: Apply firewall policy when explicitly requested
+  ansible.builtin.command:
+    cmd: nft -f {{ aial_firewall_rendered_path }}
+  when:
+    - aial_firewall_manage | bool
+    - aial_firewall_apply | bool
+    - aial_firewall_backend == 'nftables'
+  register: aial_firewall_apply_result
+  changed_when: aial_firewall_apply_result.rc == 0
+
+- name: Skip apply when aial_firewall_apply is false
+  ansible.builtin.debug:
+    msg: >-
+      Firewall policy validated and rendered to {{ aial_firewall_rendered_path }}.
+      Not applied (aial_firewall_apply=false). Set true only in authorized/molecule apply runs.
+  when:
+    - aial_firewall_manage | bool
+    - not (aial_firewall_apply | bool)

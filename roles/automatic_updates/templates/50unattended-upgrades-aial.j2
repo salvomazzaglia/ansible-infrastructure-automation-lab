@@ -1,0 +1,29 @@
+// Managed by salvomazzaglia.infrastructure_automation.automatic_updates
+// Synthetic lab policy — no email/SMTP reporting.
+Unattended-Upgrade::Origins-Pattern {
+{% if aial_autoupdate_security_only | bool %}
+        "origin=Debian,codename=${distro_codename},label=Debian-Security";
+        "origin=Ubuntu,codename=${distro_codename}-security,label=Ubuntu";
+        "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+{% else %}
+        "origin=Debian,codename=${distro_codename},label=Debian";
+        "origin=Debian,codename=${distro_codename}-updates,label=Debian";
+        "origin=Debian,codename=${distro_codename}-security,label=Debian-Security";
+        "origin=Ubuntu,codename=${distro_codename},label=Ubuntu";
+        "origin=Ubuntu,codename=${distro_codename}-updates,label=Ubuntu";
+        "origin=Ubuntu,codename=${distro_codename}-security,label=Ubuntu";
+{% endif %}
+};
+
+Unattended-Upgrade::Remove-Unused-Kernel-Packages "{{ 'true' if (aial_autoupdate_remove_unused_kernel | bool) else 'false' }}";
+Unattended-Upgrade::Remove-Unused-Dependencies "{{ 'true' if (aial_autoupdate_remove_unused_dependencies | bool) else 'false' }}";
+
+{% set _reboot = (aial_autoupdate_allow_reboot | bool) and (aial_autoupdate_automatic_reboot | bool) %}
+Unattended-Upgrade::Automatic-Reboot "{{ 'true' if _reboot else 'false' }}";
+Unattended-Upgrade::Automatic-Reboot-Time "{{ aial_autoupdate_automatic_reboot_time }}";
+
+Unattended-Upgrade::Mail "";
+Unattended-Upgrade::MailReport "only-on-error";
+
+// Local file reporting hint (no SMTP)
+// Report path (operational): {{ aial_autoupdate_report_path }}

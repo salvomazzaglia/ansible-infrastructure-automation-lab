@@ -1,0 +1,34 @@
+---
+# Web tier overrides for Molecule orchestration.
+aial_web_manage: true
+aial_web_package: nginx
+aial_web_service_name: nginx
+aial_web_listen_port: 80
+aial_web_rolling_enabled: true
+aial_web_rolling_batch_size: 1
+aial_web_pool_name: molecule-web-pool
+aial_web_pool_member_state: in_service
+aial_web_page_title: ANSIBLE INFRASTRUCTURE AUTOMATION LAB
+aial_web_remove_default_site: true
+
+aial_health_manage: true
+aial_health_fail_on_error: true
+aial_health_services:
+  - name: nginx
+    enabled: true
+    state: started
+aial_health_http_checks:
+  - name: molecule-web-healthz
+    url: http://127.0.0.1/healthz
+    expect_status: 200
+    expect_body_substring: ok
+    timeout: 5
+aial_health_expected_files:
+  - path: /var/www/aial-synthetic/index.html
+    state: file
+  - path: /etc/aial/managed.marker
+    state: file
+aial_health_config_validations:
+  - name: nginx-config
+    command: nginx -t
+    expect_rc: 0

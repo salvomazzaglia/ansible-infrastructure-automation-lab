@@ -1,0 +1,18 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.package_management
+# Variable prefix: aial_packages_
+# NEVER uses state: latest by default — only present/absent.
+
+aial_packages_present:
+  - ca-certificates
+  - curl
+  - gnupg
+  - vim-tiny
+
+aial_packages_absent: []
+
+aial_packages_update_cache: true
+aial_packages_cache_valid_time: 3600
+
+# Optional apt preferences / hold list (names only; empty by default)
+aial_packages_held: []

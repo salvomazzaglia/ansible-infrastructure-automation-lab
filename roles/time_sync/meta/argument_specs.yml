@@ -1,0 +1,37 @@
+---
+argument_specs:
+  main:
+    short_description: Time synchronization via chrony or timesyncd
+    description:
+      - Detects chrony or systemd-timesyncd and configures public NTP pools.
+      - Never hardcodes private NTP servers.
+    options:
+      aial_time_manage:
+        type: bool
+        required: false
+        default: true
+      aial_time_prefer:
+        type: str
+        required: false
+        default: auto
+        choices:
+          - auto
+          - chrony
+          - timesyncd
+      aial_time_ntp_servers:
+        type: list
+        elements: str
+        required: false
+        description: Public NTP pool hostnames (e.g. 0.pool.ntp.org).
+      aial_time_chrony_conf_path:
+        type: str
+        required: false
+        default: /etc/chrony/chrony.conf
+      aial_time_timesyncd_dropin_path:
+        type: str
+        required: false
+        default: /etc/systemd/timesyncd.conf.d/50-aial-timesync.conf
+      aial_time_timezone_hint:
+        type: str
+        required: false
+        default: UTC

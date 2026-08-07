@@ -1,0 +1,53 @@
+---
+# Baseline configuration playbook.
+# Roles: common, package_management, accounts, time_sync, logging
+#
+# Targets all inventory hosts after preflight. Public synthetic inventory
+# keeps aial_safe_to_apply=false so apply fails closed unless check mode.
+
+- name: Baseline configuration
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Apply common baseline
+      ansible.builtin.import_role:
+        name: common
+      tags:
+        - common
+        - baseline
+
+    - name: Apply package management
+      ansible.builtin.import_role:
+        name: package_management
+      tags:
+        - package_management
+        - packages
+        - baseline
+
+    - name: Apply accounts
+      ansible.builtin.import_role:
+        name: accounts
+      tags:
+        - accounts
+        - baseline
+
+    - name: Apply time synchronization
+      ansible.builtin.import_role:
+        name: time_sync
+      tags:
+        - time_sync
+        - baseline
+
+    - name: Apply logging
+      ansible.builtin.import_role:
+        name: logging
+      tags:
+        - logging
+        - baseline

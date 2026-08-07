@@ -1,0 +1,101 @@
+---
+# Check-mode oriented workflow.
+#
+# Intended usage:
+#   ansible-playbook \
+#     --inventory inventories/synthetic/hosts.yml \
+#     --check --diff \
+#     playbooks/check.yml
+#
+# Play-level check_mode/diff reinforce the CLI flags. Preflight allows
+# check mode when aial_safe_to_apply is false.
+
+- name: Check-mode desired-state preview
+  hosts: all
+  gather_facts: true
+  become: true
+  check_mode: true
+  diff: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Preview common baseline
+      ansible.builtin.import_role:
+        name: common
+      tags:
+        - common
+        - check
+
+    - name: Preview package management
+      ansible.builtin.import_role:
+        name: package_management
+      tags:
+        - package_management
+        - check
+
+    - name: Preview accounts
+      ansible.builtin.import_role:
+        name: accounts
+      tags:
+        - accounts
+        - check
+
+    - name: Preview time synchronization
+      ansible.builtin.import_role:
+        name: time_sync
+      tags:
+        - time_sync
+        - check
+
+    - name: Preview logging
+      ansible.builtin.import_role:
+        name: logging
+      tags:
+        - logging
+        - check
+
+    - name: Preview SSH hardening
+      ansible.builtin.import_role:
+        name: ssh_hardening
+      tags:
+        - ssh_hardening
+        - check
+
+    - name: Preview automatic updates policy
+      ansible.builtin.import_role:
+        name: automatic_updates
+      tags:
+        - automatic_updates
+        - check
+
+    - name: Preview firewall policy
+      ansible.builtin.import_role:
+        name: firewall_policy
+      tags:
+        - firewall_policy
+        - check
+
+- name: Check-mode web service preview
+  hosts: web
+  gather_facts: true
+  become: true
+  check_mode: true
+  diff: true
+  serial: 1
+  tasks:
+    - name: Run preflight safety gates for web check
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Preview web service
+      ansible.builtin.import_role:
+        name: web_service
+      tags:
+        - web_service
+        - check

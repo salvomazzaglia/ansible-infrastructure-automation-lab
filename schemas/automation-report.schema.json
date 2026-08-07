@@ -1,0 +1,184 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/salvomazzaglia/ansible-infrastructure-automation-lab/schemas/automation-report.schema.json",
+  "title": "Ansible Infrastructure Automation Lab — Automation Report",
+  "description": "Sanitized Ansible execution metadata. Must never contain raw secrets, vault values, passwords, SSH keys, become passwords, or no_log task result payloads.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "schema_version",
+    "generated_at",
+    "sanitized",
+    "summary",
+    "recap",
+    "tasks"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "automation-report"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "banner": {
+      "type": "string",
+      "description": "Optional synthetic-data banner for sample reports."
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "started_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "finished_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "duration_seconds": {
+      "type": "number",
+      "minimum": 0
+    },
+    "playbook": {
+      "type": ["string", "null"]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["check", "apply", "idempotence", "drift", "unknown"]
+    },
+    "check_mode": {
+      "type": "boolean"
+    },
+    "sanitized": {
+      "type": "boolean",
+      "const": true
+    },
+    "security": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "no_log_honored": { "type": "boolean" },
+        "secrets_redacted": { "type": "boolean" },
+        "result_payloads_omitted": { "type": "boolean" }
+      }
+    },
+    "inventory": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "host_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "hosts": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "roles": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "changed", "failures", "unreachable", "skipped"],
+      "properties": {
+        "ok": { "type": "integer", "minimum": 0 },
+        "changed": { "type": "integer", "minimum": 0 },
+        "failures": { "type": "integer", "minimum": 0 },
+        "unreachable": { "type": "integer", "minimum": 0 },
+        "skipped": { "type": "integer", "minimum": 0 },
+        "tasks_recorded": { "type": "integer", "minimum": 0 },
+        "unchanged": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "recap": {
+      "type": "object",
+      "description": "Per-host aggregate recap keyed by inventory host alias.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "ok": { "type": "integer", "minimum": 0 },
+          "changed": { "type": "integer", "minimum": 0 },
+          "failures": { "type": "integer", "minimum": 0 },
+          "unreachable": { "type": "integer", "minimum": 0 },
+          "skipped": { "type": "integer", "minimum": 0 },
+          "rescued": { "type": "integer", "minimum": 0 },
+          "ignored": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "tasks": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/taskRecord" }
+    },
+    "idempotence": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "second_run_changed": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "definitions": {
+    "taskRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "task",
+        "status",
+        "changed",
+        "failed",
+        "skipped"
+      ],
+      "properties": {
+        "play": { "type": ["string", "null"] },
+        "host": {
+          "type": "string",
+          "description": "Inventory host alias (not ansible_host)."
+        },
+        "task": { "type": "string" },
+        "role": { "type": ["string", "null"] },
+        "status": {
+          "type": "string",
+          "enum": ["ok", "changed", "failed", "skipped", "unreachable"]
+        },
+        "changed": { "type": "boolean" },
+        "failed": { "type": "boolean" },
+        "skipped": { "type": "boolean" },
+        "unreachable": { "type": "boolean" },
+        "duration_seconds": {
+          "type": ["number", "null"],
+          "minimum": 0
+        },
+        "no_log": { "type": "boolean" },
+        "check_mode": { "type": "boolean" },
+        "result": {
+          "description": "Must be null or the literal REDACTED when no_log is true. Raw module results are never stored.",
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "const": "REDACTED" }
+          ]
+        }
+      }
+    }
+  }
+}

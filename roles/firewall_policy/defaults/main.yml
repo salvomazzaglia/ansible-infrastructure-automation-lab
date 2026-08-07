@@ -1,0 +1,39 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.firewall_policy
+# Variable prefix: aial_firewall_
+# Apply is false by default — validate and render only unless explicitly enabled.
+
+aial_firewall_manage: true
+aial_firewall_apply: false
+
+aial_firewall_backend: nftables  # nftables | iptables-restore (rendered artifact)
+aial_firewall_policy_path: /etc/aial/firewall/policy.nft
+aial_firewall_rendered_path: /etc/aial/firewall/rendered.nft
+aial_firewall_state_path: /etc/aial/firewall/last-validated.json
+
+aial_firewall_default_inbound: drop
+aial_firewall_default_outbound: accept
+
+# Example rules use documentation-safe scopes (documentation CIDRs / invalid hosts only)
+aial_firewall_rules:
+  - id: allow-ssh-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 22
+    source: 203.0.113.0/24
+    comment: Synthetic lab SSH from documentation TEST-NET-3
+  - id: allow-http-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 80
+    source: any
+    comment: Synthetic HTTP for demo web service
+
+aial_firewall_allowed_protocols:
+  - tcp
+  - udp
+  - icmp
+
+aial_firewall_reject_implicit_allow_all: true

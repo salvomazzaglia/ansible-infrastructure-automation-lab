@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ansible-infrastructure-automation-lab"
+version = "1.0.0"
+description = "Static tests and guards for the Ansible infrastructure automation laboratory"
+readme = "VERSION"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Salvatore Mazzaglia" }]
+dependencies = [
+  "PyYAML>=6.0.2",
+  "jsonschema>=4.24.0",
+  "pytest>=8.4.1",
+]
+
+[project.optional-dependencies]
+dev = [
+  "ansible-core>=2.20.7,<2.22.0",
+  "ansible-lint==26.6.0",
+  "yamllint==1.38.0",
+  "molecule==26.6.0",
+]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+pythonpath = [".", "scripts"]
+addopts = [
+  "-q",
+  "--strict-markers",
+  "--tb=short",
+]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+]
+markers = [
+  "collection: collection layout and galaxy metadata",
+  "inventory: synthetic inventory guards",
+  "security: security pattern guards",
+  "secrets: secret and vault guards",
+  "reports: sample report validation",
+  "playbooks: playbook structure",
+  "roles: role argument specs",
+  "deps: dependency manifests",
+  "guards: repository-wide guards",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

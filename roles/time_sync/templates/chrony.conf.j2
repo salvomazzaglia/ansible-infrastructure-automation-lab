@@ -1,0 +1,9 @@
+# Managed by salvomazzaglia.infrastructure_automation.time_sync
+# Public NTP pools only — override aial_time_ntp_servers as needed.
+{% for server in aial_time_ntp_servers %}
+pool {{ server }} iburst
+{% endfor %}
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony

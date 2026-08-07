@@ -1,0 +1,32 @@
+---
+# Soft cleanup of web orchestration artifacts before destroy.
+
+- name: Cleanup orchestration Molecule artifacts
+  hosts: web
+  gather_facts: false
+  become: true
+  ignore_unreachable: true
+  tasks:
+    - name: Stop nginx service if present (ephemeral only)
+      ansible.builtin.service:
+        name: nginx
+        state: stopped
+      failed_when: false
+
+    - name: Remove web demo artifacts
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /var/www/aial-synthetic/pool-state.txt
+        - /opt/aial/state/pool-transition.txt
+        - /opt/aial/state/pool-transition-drain.txt
+        - /etc/aial/firewall/rendered.nft
+        - /etc/aial/firewall/last-validated.json
+      failed_when: false
+
+    - name: Document cleanup scope
+      ansible.builtin.debug:
+        msg: >-
+          Soft cleanup complete on {{ inventory_hostname }}.
+          Container destroy remains the destroy.yml step.

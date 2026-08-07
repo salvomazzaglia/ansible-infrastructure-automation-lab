@@ -1,0 +1,11 @@
+---
+# Host-specific synthetic overrides for ansible-web-01.
+# Demonstrates host_vars precedence over group_vars.
+
+aial_web_page_body: SYNTHETIC DEMONSTRATION SERVICE — WEB-01
+aial_web_listen_port: 80
+aial_common_manage_hostname: false
+aial_common_hostname: ansible-web-01.lab.example.invalid
+
+# Example pool member label for rolling orchestration demos
+aial_web_pool_member_label: web-01

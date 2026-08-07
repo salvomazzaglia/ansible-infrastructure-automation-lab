@@ -1,0 +1,108 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.ssh_hardening
+
+- name: Resolve effective SSH hardening settings
+  ansible.builtin.set_fact:
+    aial_ssh_effective_permit_root_login: >-
+      {{
+        aial_ssh_emergency_permit_root_login
+        if (aial_ssh_emergency_compatibility | bool)
+        else aial_ssh_permit_root_login
+      }}
+    aial_ssh_effective_password_authentication: >-
+      {{
+        aial_ssh_emergency_password_authentication
+        if (aial_ssh_emergency_compatibility | bool)
+        else aial_ssh_password_authentication
+      }}
+    aial_ssh_effective_allow_tcp_forwarding: >-
+      {{
+        aial_ssh_emergency_allow_tcp_forwarding
+        if (aial_ssh_emergency_compatibility | bool)
+        else aial_ssh_allow_tcp_forwarding
+      }}
+  when: aial_ssh_manage | bool
+
+- name: Assert PermitRootLogin is never yes
+  ansible.builtin.assert:
+    that:
+      - aial_ssh_effective_permit_root_login | string | lower != 'yes'
+    fail_msg: >-
+      aial_ssh PermitRootLogin must not be 'yes'
+      (got {{ aial_ssh_effective_permit_root_login }}).
+  when: aial_ssh_manage | bool
+
+- name: Ensure sshd_config.d directory exists
+  ansible.builtin.file:
+    path: "{{ aial_ssh_dropin_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when: aial_ssh_manage | bool
+
+- name: Check whether sshd binary is present
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /usr/sbin/sshd
+    - /usr/bin/sshd
+  register: aial_ssh_sshd_stat
+  when: aial_ssh_manage | bool
+
+- name: Record sshd availability
+  ansible.builtin.set_fact:
+    aial_ssh_sshd_present: >-
+      {{
+        aial_ssh_sshd_stat.results
+        | selectattr('stat.exists', 'defined')
+        | selectattr('stat.exists')
+        | list
+        | length > 0
+      }}
+  when: aial_ssh_manage | bool
+
+- name: Deploy SSH hardening drop-in configuration
+  ansible.builtin.template:
+    src: 50-aial-hardening.conf.j2
+    dest: "{{ aial_ssh_dropin_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  register: aial_ssh_dropin_result
+  when: aial_ssh_manage | bool
+
+- name: Ensure OpenSSH privilege separation directory exists
+  ansible.builtin.file:
+    path: /run/sshd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when:
+    - aial_ssh_manage | bool
+    - aial_ssh_validate_sshd | bool
+    - aial_ssh_sshd_present | bool
+
+- name: Validate full sshd configuration before reload
+  ansible.builtin.command:
+    cmd: sshd -t
+  register: aial_ssh_sshd_test
+  # intentional: read-only validation; no host change expected
+  changed_when: false
+  when:
+    - aial_ssh_manage | bool
+    - aial_ssh_validate_sshd | bool
+    - aial_ssh_sshd_present | bool
+    - aial_ssh_dropin_result is changed
+
+- name: Notify SSH reload after successful validation
+  ansible.builtin.debug:
+    msg: SSH drop-in changed and validated; notifying Reload SSH.
+  changed_when: true
+  notify: Reload SSH
+  when:
+    - aial_ssh_manage | bool
+    - aial_ssh_dropin_result is changed
+    - aial_ssh_sshd_present | bool
+    - (not (aial_ssh_validate_sshd | bool)) or (aial_ssh_sshd_test is succeeded)

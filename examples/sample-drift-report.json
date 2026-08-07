@@ -1,0 +1,107 @@
+{
+  "schema": "drift-report",
+  "schema_version": "1.0.0",
+  "banner": "SYNTHETIC DEMONSTRATION DATA",
+  "generated_at": "2026-08-01T12:00:00Z",
+  "playbook": "playbooks/site.yml",
+  "check_mode": true,
+  "inventory_groups": [
+    "web",
+    "app",
+    "database",
+    "monitoring",
+    "bastion"
+  ],
+  "summary": {
+    "compliant": 1,
+    "change_required": 2,
+    "unavailable": 1,
+    "failed": 1,
+    "skipped": 1,
+    "total": 6
+  },
+  "findings": [
+    {
+      "host": "web01.lab.example.invalid",
+      "role": "ssh_hardening",
+      "task": "Ensure SSH PermitRootLogin is prohibit-password",
+      "expected_change": true,
+      "changed": true,
+      "status": "change_required",
+      "severity": "high",
+      "importance": "high",
+      "reason": "Observed PermitRootLogin differs from desired prohibit-password.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T11:59:50Z"
+    },
+    {
+      "host": "web02.lab.example.invalid",
+      "role": "firewall_policy",
+      "task": "Ensure nftables baseline policy is present",
+      "expected_change": false,
+      "changed": false,
+      "status": "compliant",
+      "severity": "low",
+      "importance": "low",
+      "reason": "Firewall policy matches desired state.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T11:59:52Z"
+    },
+    {
+      "host": "app01.lab.example.invalid",
+      "role": "time_sync",
+      "task": "Ensure chrony is configured",
+      "expected_change": true,
+      "changed": true,
+      "status": "change_required",
+      "severity": "medium",
+      "importance": "medium",
+      "reason": "NTP servers list diverges from group_vars.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T11:59:54Z"
+    },
+    {
+      "host": "db01.lab.example.invalid",
+      "role": "service_health",
+      "task": "Probe synthetic health endpoint",
+      "expected_change": false,
+      "changed": false,
+      "status": "unavailable",
+      "severity": "medium",
+      "importance": "medium",
+      "reason": "Host unreachable in synthetic check inventory subset.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T11:59:56Z"
+    },
+    {
+      "host": "mon01.lab.example.invalid",
+      "role": "logging",
+      "task": "Ensure journald persistent storage",
+      "expected_change": false,
+      "changed": false,
+      "status": "skipped",
+      "severity": "low",
+      "importance": "low",
+      "reason": "Role tagged out for monitoring group in this sample run.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T11:59:58Z"
+    },
+    {
+      "host": "bastion01.lab.example.invalid",
+      "role": "accounts",
+      "task": "Ensure service account password hash is managed",
+      "expected_change": false,
+      "changed": false,
+      "status": "failed",
+      "severity": "critical",
+      "importance": "critical",
+      "reason": "Synthetic failure: required variable placeholder not provided.",
+      "check_mode": true,
+      "timestamp": "2026-08-01T12:00:00Z"
+    }
+  ],
+  "limitations": [
+    "Synthetic demonstration data only.",
+    "Drift statuses are illustrative for schema and UI samples."
+  ]
+}

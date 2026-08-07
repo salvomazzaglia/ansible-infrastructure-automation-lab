@@ -1,0 +1,43 @@
+---
+name: Feature request
+description: Suggest an enhancement for the Ansible Infrastructure Automation Lab
+title: "[feature] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the enhancement in terms of the **synthetic lab** and safety model.
+        Roadmap items such as AWX, AAP, cloud dynamic inventory, Windows nodes,
+        or Galaxy publish are tracked as future work — prefer linking to those
+        themes rather than requesting production integrations in v1.x.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / motivation
+      description: What gap does this address for learners or portfolio demonstration?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Keep scope synthetic, Debian/Ubuntu-focused, and fail-closed for apply.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Optional notes on other approaches.
+
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety acknowledgement
+      options:
+        - label: This request does not require committing real infrastructure data or disabling preflight apply gates.
+          required: true

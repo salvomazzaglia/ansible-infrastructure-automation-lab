@@ -1,0 +1,5 @@
+---
+# handlers file for salvomazzaglia.infrastructure_automation.automatic_updates
+# Intentionally no reboot handlers — CI-safe.
+# Reboot policy is written to unattended-upgrades config only when
+# aial_autoupdate_allow_reboot and aial_autoupdate_automatic_reboot are both true.

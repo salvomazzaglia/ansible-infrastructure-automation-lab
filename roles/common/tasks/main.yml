@@ -1,0 +1,81 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.common
+
+- name: Ensure aial marker parent directory exists
+  ansible.builtin.file:
+    path: "{{ aial_common_config_marker_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: Deploy configuration marker
+  ansible.builtin.copy:
+    content: "{{ aial_common_config_marker }}"
+    dest: "{{ aial_common_config_marker_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: Set system hostname when requested
+  ansible.builtin.hostname:
+    name: "{{ aial_common_hostname }}"
+  when:
+    - aial_common_manage_hostname | bool
+    - aial_common_hostname | length > 0
+
+- name: Read current timezone
+  ansible.builtin.command:
+    cmd: timedatectl show -p Timezone --value
+  register: aial_common_timezone_current
+  # intentional: read-only probe used to drive conditional apply below
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: aial_common_timezone | length > 0
+
+- name: Ensure timezone is configured
+  ansible.builtin.command:
+    cmd: timedatectl set-timezone {{ aial_common_timezone }}
+  when:
+    - aial_common_timezone | length > 0
+    - aial_common_timezone_current.rc is defined
+    - aial_common_timezone_current.rc == 0
+    - aial_common_timezone_current.stdout != aial_common_timezone
+  changed_when: true
+
+- name: Record locale metadata (informational)
+  ansible.builtin.debug:
+    msg: >-
+      Locale metadata for this host is documented as
+      {{ aial_common_locale }} (synthetic policy; locale generation
+      is left to the platform image).
+
+- name: Ensure standard directories exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    mode: "{{ item.mode | default('0755') }}"
+    owner: "{{ item.owner | default('root') }}"
+    group: "{{ item.group | default('root') }}"
+  loop: "{{ aial_common_standard_dirs }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Deploy MOTD banner
+  ansible.builtin.copy:
+    content: "{{ aial_common_motd }}"
+    dest: /etc/motd
+    mode: "0644"
+    owner: root
+    group: root
+  when: aial_common_manage_motd | bool
+
+- name: Deploy SSH issue.net banner content
+  ansible.builtin.copy:
+    content: "{{ aial_common_banner }}"
+    dest: /etc/issue.net
+    mode: "0644"
+    owner: root
+    group: root
+  when: aial_common_manage_banner | bool

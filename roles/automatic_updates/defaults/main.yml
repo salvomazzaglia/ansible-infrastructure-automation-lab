@@ -1,0 +1,22 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.automatic_updates
+# Variable prefix: aial_autoupdate_
+# NEVER reboot in handlers during CI — allow_reboot defaults false.
+# No email / SMTP by default.
+
+aial_autoupdate_manage: true
+aial_autoupdate_enabled: true
+aial_autoupdate_security_only: true
+aial_autoupdate_allow_reboot: false
+aial_autoupdate_automatic_reboot: false
+aial_autoupdate_automatic_reboot_time: "02:00"
+aial_autoupdate_remove_unused_kernel: true
+aial_autoupdate_remove_unused_dependencies: true
+
+# Reporting to local file only — no mail
+aial_autoupdate_mail_report: false
+aial_autoupdate_report_path: /var/log/aial/unattended-upgrades-report.txt
+
+aial_autoupdate_periodic_path: /etc/apt/apt.conf.d/20auto-upgrades
+aial_autoupdate_unattended_path: /etc/apt/apt.conf.d/50unattended-upgrades-aial
+aial_autoupdate_package_name: unattended-upgrades

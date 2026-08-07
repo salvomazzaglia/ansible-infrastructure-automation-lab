@@ -1,0 +1,71 @@
+---
+argument_specs:
+  main:
+    short_description: Baseline host configuration for the AIAL lab
+    description:
+      - Configures optional hostname, timezone, locale metadata, standard directories,
+        MOTD/banner, and a managed configuration marker.
+      - All content is synthetic-safe demonstration policy.
+    options:
+      aial_common_manage_hostname:
+        type: bool
+        required: false
+        default: false
+        description: When true, set the system hostname from aial_common_hostname.
+      aial_common_hostname:
+        type: str
+        required: false
+        default: ""
+        description: Hostname to apply when manage_hostname is true (synthetic names only).
+      aial_common_timezone:
+        type: str
+        required: false
+        default: UTC
+        description: IANA timezone name.
+      aial_common_locale:
+        type: str
+        required: false
+        default: en_US.UTF-8
+        description: Documented locale metadata (not enforced via package generation).
+      aial_common_standard_dirs:
+        type: list
+        elements: dict
+        required: false
+        description: Directories to ensure exist.
+        options:
+          path:
+            type: str
+            required: true
+          mode:
+            type: str
+            required: false
+          owner:
+            type: str
+            required: false
+          group:
+            type: str
+            required: false
+      aial_common_motd:
+        type: str
+        required: false
+        description: Contents written to /etc/motd.
+      aial_common_banner:
+        type: str
+        required: false
+        description: Contents written to /etc/issue.net.
+      aial_common_manage_motd:
+        type: bool
+        required: false
+        default: true
+      aial_common_manage_banner:
+        type: bool
+        required: false
+        default: true
+      aial_common_config_marker_path:
+        type: str
+        required: false
+        default: /etc/aial/managed.marker
+      aial_common_config_marker:
+        type: str
+        required: false
+        description: Marker file body indicating Ansible management.

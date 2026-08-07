@@ -1,0 +1,108 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.web_service
+
+- name: Assert Debian family for web service
+  ansible.builtin.assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: web_service supports Debian/Ubuntu only.
+  when: aial_web_manage | bool
+
+- name: Assert listen port is valid
+  ansible.builtin.assert:
+    that:
+      - aial_web_listen_port | int >= 1
+      - aial_web_listen_port | int <= 65535
+    fail_msg: aial_web_listen_port must be between 1 and 65535.
+  when: aial_web_manage | bool
+
+- name: Assert pool member state is valid
+  ansible.builtin.assert:
+    that:
+      - aial_web_pool_member_state in ['in_service', 'draining', 'out_of_service']
+    fail_msg: Invalid aial_web_pool_member_state.
+  when: aial_web_manage | bool
+
+- name: Install nginx package for synthetic web service
+  ansible.builtin.apt:
+    name: "{{ aial_web_package }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: aial_web_manage | bool
+
+- name: Ensure web root directory exists
+  ansible.builtin.file:
+    path: "{{ aial_web_root }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when: aial_web_manage | bool
+
+- name: Deploy synthetic demonstration index page
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ aial_web_index_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart synthetic web service
+  when: aial_web_manage | bool
+
+- name: Deploy nginx site configuration
+  ansible.builtin.template:
+    src: nginx-site.conf.j2
+    dest: "{{ aial_web_site_config_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart synthetic web service
+  when: aial_web_manage | bool
+
+- name: Enable aial synthetic site
+  ansible.builtin.file:
+    src: "{{ aial_web_site_config_path }}"
+    dest: "{{ aial_web_site_enabled_path }}"
+    state: link
+    force: true
+    follow: false
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart synthetic web service
+  when: aial_web_manage | bool
+
+- name: Disable default nginx site when requested
+  ansible.builtin.file:
+    path: /etc/nginx/sites-enabled/default
+    state: absent
+  notify: Restart synthetic web service
+  when:
+    - aial_web_manage | bool
+    - aial_web_remove_default_site | bool
+
+- name: Validate nginx configuration
+  ansible.builtin.command:
+    cmd: nginx -t
+  # intentional: read-only check; no host change expected
+  changed_when: false
+  when: aial_web_manage | bool
+
+- name: Ensure nginx service matches pool simulation state
+  ansible.builtin.service:
+    name: "{{ aial_web_service_name }}"
+    state: "{{ 'started' if aial_web_pool_member_state != 'out_of_service' else 'stopped' }}"
+    enabled: "{{ true if aial_web_pool_member_state != 'out_of_service' else false }}"
+  when: aial_web_manage | bool
+
+- name: Record rolling deployment simulation metadata
+  ansible.builtin.copy:
+    content: |
+      pool={{ aial_web_pool_name }}
+      member_state={{ aial_web_pool_member_state }}
+      rolling_enabled={{ aial_web_rolling_enabled | bool | lower }}
+      batch_size={{ aial_web_rolling_batch_size | int }}
+    dest: "{{ aial_web_root }}/pool-state.txt"
+    mode: "0644"
+  when: aial_web_manage | bool

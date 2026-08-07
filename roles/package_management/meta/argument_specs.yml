@@ -1,0 +1,33 @@
+---
+argument_specs:
+  main:
+    short_description: Baseline package present/absent management
+    description:
+      - Ensures packages are present or absent on Debian/Ubuntu.
+      - Never defaults to state latest — only present or absent.
+    options:
+      aial_packages_present:
+        type: list
+        elements: str
+        required: false
+        description: Package names to ensure present.
+      aial_packages_absent:
+        type: list
+        elements: str
+        required: false
+        description: Package names to ensure absent.
+      aial_packages_update_cache:
+        type: bool
+        required: false
+        default: true
+        description: Update apt cache before install when needed.
+      aial_packages_cache_valid_time:
+        type: int
+        required: false
+        default: 3600
+        description: Seconds for which the apt cache is considered valid.
+      aial_packages_held:
+        type: list
+        elements: str
+        required: false
+        description: Package names to mark hold via dpkg selections.

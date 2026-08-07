@@ -1,0 +1,15 @@
+# Managed by salvomazzaglia.infrastructure_automation.ssh_hardening
+# Synthetic demonstration SSH policy — not for production blindly.
+{% if aial_ssh_emergency_compatibility | bool %}
+# EMERGENCY COMPATIBILITY MODE ACTIVE
+{% endif %}
+PermitRootLogin {{ aial_ssh_effective_permit_root_login }}
+PasswordAuthentication {{ 'yes' if (aial_ssh_effective_password_authentication | bool) else 'no' }}
+PubkeyAuthentication {{ 'yes' if (aial_ssh_pubkey_authentication | bool) else 'no' }}
+MaxAuthTries {{ aial_ssh_max_auth_tries | int }}
+LoginGraceTime {{ aial_ssh_login_grace_time | int }}
+X11Forwarding {{ 'yes' if (aial_ssh_x11_forwarding | bool) else 'no' }}
+AllowTcpForwarding {{ 'yes' if (aial_ssh_effective_allow_tcp_forwarding | bool) else 'no' }}
+ClientAliveInterval {{ aial_ssh_client_alive_interval | int }}
+ClientAliveCountMax {{ aial_ssh_client_alive_count_max | int }}
+LogLevel {{ aial_ssh_log_level }}

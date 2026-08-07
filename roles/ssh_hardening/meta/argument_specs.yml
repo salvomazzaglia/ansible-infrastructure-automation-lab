@@ -1,0 +1,101 @@
+---
+argument_specs:
+  main:
+    short_description: SSH hardening drop-in configuration
+    description:
+      - Deploys an sshd_config.d drop-in with hardened defaults.
+      - Validates with sshd -t before reload when sshd is present.
+      - PermitRootLogin must never be yes.
+    options:
+      aial_ssh_manage:
+        type: bool
+        required: false
+        default: true
+      aial_ssh_dropin_path:
+        type: str
+        required: false
+        default: /etc/ssh/sshd_config.d/50-aial-hardening.conf
+      aial_ssh_permit_root_login:
+        type: str
+        required: false
+        default: prohibit-password
+        choices:
+          - prohibit-password
+          - no
+          - without-password
+          - forced-commands-only
+      aial_ssh_password_authentication:
+        type: bool
+        required: false
+        default: false
+      aial_ssh_pubkey_authentication:
+        type: bool
+        required: false
+        default: true
+      aial_ssh_max_auth_tries:
+        type: int
+        required: false
+        default: 3
+      aial_ssh_login_grace_time:
+        type: int
+        required: false
+        default: 30
+      aial_ssh_x11_forwarding:
+        type: bool
+        required: false
+        default: false
+      aial_ssh_allow_tcp_forwarding:
+        type: bool
+        required: false
+        default: false
+      aial_ssh_client_alive_interval:
+        type: int
+        required: false
+        default: 300
+      aial_ssh_client_alive_count_max:
+        type: int
+        required: false
+        default: 2
+      aial_ssh_log_level:
+        type: str
+        required: false
+        default: VERBOSE
+        choices:
+          - QUIET
+          - FATAL
+          - ERROR
+          - INFO
+          - VERBOSE
+          - DEBUG
+          - DEBUG1
+          - DEBUG2
+          - DEBUG3
+      aial_ssh_emergency_compatibility:
+        type: bool
+        required: false
+        default: false
+      aial_ssh_emergency_permit_root_login:
+        type: str
+        required: false
+        default: prohibit-password
+        choices:
+          - prohibit-password
+          - no
+          - without-password
+          - forced-commands-only
+      aial_ssh_emergency_password_authentication:
+        type: bool
+        required: false
+        default: false
+      aial_ssh_emergency_allow_tcp_forwarding:
+        type: bool
+        required: false
+        default: true
+      aial_ssh_validate_sshd:
+        type: bool
+        required: false
+        default: true
+      aial_ssh_service_name:
+        type: str
+        required: false
+        default: ssh

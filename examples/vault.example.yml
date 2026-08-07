@@ -1,0 +1,6 @@
+---
+# Placeholder-only example for ansible-vault workflows.
+# Replace CHANGE_ME_WITH_ANSIBLE_VAULT values using ansible-vault encrypt_string
+# or an encrypted vault file. Never commit real secrets or vault passwords.
+aial_example_api_token: CHANGE_ME_WITH_ANSIBLE_VAULT
+aial_example_service_password: CHANGE_ME_WITH_ANSIBLE_VAULT

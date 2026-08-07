@@ -1,0 +1,210 @@
+{
+  "schema": "automation-report",
+  "schema_version": "1.0.0",
+  "banner": "SYNTHETIC DEMONSTRATION DATA",
+  "generated_at": "2026-08-01T12:00:00Z",
+  "started_at": "2026-08-01T11:59:40Z",
+  "finished_at": "2026-08-01T12:00:00Z",
+  "duration_seconds": 20.0,
+  "playbook": "playbooks/site.yml",
+  "mode": "check",
+  "check_mode": true,
+  "sanitized": true,
+  "security": {
+    "no_log_honored": true,
+    "secrets_redacted": true,
+    "result_payloads_omitted": true
+  },
+  "inventory": {
+    "groups": [
+      "web",
+      "app",
+      "database",
+      "monitoring",
+      "bastion"
+    ],
+    "host_count": 6,
+    "hosts": [
+      "web01.lab.example.invalid",
+      "web02.lab.example.invalid",
+      "app01.lab.example.invalid",
+      "db01.lab.example.invalid",
+      "mon01.lab.example.invalid",
+      "bastion01.lab.example.invalid"
+    ]
+  },
+  "roles": [
+    "common",
+    "package_management",
+    "accounts",
+    "ssh_hardening",
+    "time_sync",
+    "logging",
+    "automatic_updates",
+    "firewall_policy",
+    "web_service",
+    "service_health"
+  ],
+  "summary": {
+    "ok": 3,
+    "changed": 2,
+    "failures": 0,
+    "unreachable": 0,
+    "skipped": 1,
+    "unchanged": 3,
+    "tasks_recorded": 6
+  },
+  "recap": {
+    "web01.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "web02.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "app01.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "db01.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "mon01.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    },
+    "bastion01.lab.example.invalid": {
+      "ok": 1,
+      "changed": 0,
+      "failures": 0,
+      "unreachable": 0,
+      "skipped": 0,
+      "rescued": 0,
+      "ignored": 0
+    }
+  },
+  "tasks": [
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "web01.lab.example.invalid",
+      "task": "Ensure SSH PermitRootLogin is prohibit-password",
+      "role": "ssh_hardening",
+      "status": "changed",
+      "changed": true,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.21,
+      "no_log": false,
+      "check_mode": true,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "web02.lab.example.invalid",
+      "task": "Ensure nftables baseline policy is present",
+      "role": "firewall_policy",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.18,
+      "no_log": false,
+      "check_mode": true,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "app01.lab.example.invalid",
+      "task": "Ensure service account password hash is managed",
+      "role": "accounts",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.09,
+      "no_log": true,
+      "check_mode": true,
+      "result": "REDACTED"
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "db01.lab.example.invalid",
+      "task": "Ensure chrony is configured",
+      "role": "time_sync",
+      "status": "changed",
+      "changed": true,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.15,
+      "no_log": false,
+      "check_mode": true,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "mon01.lab.example.invalid",
+      "task": "Ensure journald persistent storage",
+      "role": "logging",
+      "status": "ok",
+      "changed": false,
+      "failed": false,
+      "skipped": false,
+      "unreachable": false,
+      "duration_seconds": 0.11,
+      "no_log": false,
+      "check_mode": true,
+      "result": null
+    },
+    {
+      "play": "Synthetic infrastructure baseline",
+      "host": "bastion01.lab.example.invalid",
+      "task": "Ensure baseline packages are present",
+      "role": "package_management",
+      "status": "skipped",
+      "changed": false,
+      "failed": false,
+      "skipped": true,
+      "unreachable": false,
+      "duration_seconds": 0.02,
+      "no_log": false,
+      "check_mode": true,
+      "result": null
+    }
+  ],
+  "limitations": [
+    "Synthetic demonstration data only.",
+    "Hosts use .example.invalid aliases; no ansible_host addresses.",
+    "Check mode reports proposed changes; nothing was applied."
+  ]
+}

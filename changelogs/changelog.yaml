@@ -1,0 +1,16 @@
+---
+# Ansible collection changelog fragments for salvomazzaglia.infrastructure_automation
+# See https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_changelogs.html
+releases:
+  1.0.0:
+    release_date: "2026-08-07"
+    changes:
+      major_changes:
+        - >
+          Initial public release of the Ansible Infrastructure Automation Lab
+          collection with ten reusable roles, synthetic inventories, check-mode
+          and drift workflows, Molecule scenarios, and CI quality gates.
+      release_summary: >
+        Portfolio-ready configuration-management laboratory demonstrating
+        Ansible collections, roles, inventories, handlers, idempotence, and
+        safe synthetic testing.

@@ -1,0 +1,77 @@
+---
+argument_specs:
+  main:
+    short_description: journald settings and optional remote forwarding
+    description:
+      - Configures journald retention and compression.
+      - Remote forwarding is disabled by default.
+      - Examples use logs.example.invalid.
+    options:
+      aial_logging_manage:
+        type: bool
+        required: false
+        default: true
+      aial_logging_journald_dropin_path:
+        type: str
+        required: false
+        default: /etc/systemd/journald.conf.d/50-aial-journald.conf
+      aial_logging_storage:
+        type: str
+        required: false
+        default: persistent
+        choices:
+          - volatile
+          - persistent
+          - auto
+          - none
+      aial_logging_compress:
+        type: bool
+        required: false
+        default: true
+      aial_logging_system_max_use:
+        type: str
+        required: false
+        default: 500M
+      aial_logging_runtime_max_use:
+        type: str
+        required: false
+        default: 100M
+      aial_logging_max_retention_sec:
+        type: int
+        required: false
+        default: 1209600
+      aial_logging_max_file_sec:
+        type: int
+        required: false
+        default: 86400
+      aial_logging_forward_to_syslog:
+        type: bool
+        required: false
+        default: false
+      aial_logging_forward_to_wall:
+        type: bool
+        required: false
+        default: false
+      aial_logging_forward_to_remote:
+        type: bool
+        required: false
+        default: false
+      aial_logging_remote_host:
+        type: str
+        required: false
+        default: logs.example.invalid
+      aial_logging_remote_port:
+        type: int
+        required: false
+        default: 514
+      aial_logging_remote_protocol:
+        type: str
+        required: false
+        default: udp
+        choices:
+          - tcp
+          - udp
+      aial_logging_rsyslog_forward_path:
+        type: str
+        required: false
+        default: /etc/rsyslog.d/50-aial-remote.conf

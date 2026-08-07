@@ -1,0 +1,18 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.time_sync
+# Variable prefix: aial_time_
+# Prefer public documentation pools; never hardcode private NTP.
+
+aial_time_manage: true
+aial_time_prefer: auto  # auto | chrony | timesyncd
+
+# Public NTP pool hosts (documentation-safe public pools)
+aial_time_ntp_servers:
+  - 0.pool.ntp.org
+  - 1.pool.ntp.org
+  - 2.pool.ntp.org
+  - 3.pool.ntp.org
+
+aial_time_chrony_conf_path: /etc/chrony/chrony.conf
+aial_time_timesyncd_dropin_path: /etc/systemd/timesyncd.conf.d/50-aial-timesync.conf
+aial_time_timezone_hint: UTC

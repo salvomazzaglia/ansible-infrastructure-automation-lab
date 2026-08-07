@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sample Automation Report — Ansible Infrastructure Automation Lab</title>
+  <style>
+    :root {
+      --bg: #f3f6f8;
+      --panel: #ffffff;
+      --ink: #15202b;
+      --muted: #5b6b7c;
+      --accent: #0f6a5c;
+      --accent-soft: #d8efe9;
+      --warn: #9a5b00;
+      --line: #d5dde5;
+      --banner: #7a1f1f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #e7f3ef 0%, transparent 55%),
+        linear-gradient(180deg, #eef3f7 0%, var(--bg) 40%, #e8eef3 100%);
+      line-height: 1.45;
+    }
+    header {
+      padding: 28px 40px 18px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255,255,255,0.72);
+      backdrop-filter: blur(6px);
+    }
+    .banner {
+      display: inline-block;
+      background: var(--banner);
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      font-size: 12px;
+      padding: 6px 10px;
+      margin-bottom: 12px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 70ch;
+    }
+    main {
+      padding: 24px 40px 48px;
+      display: grid;
+      gap: 18px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 18px 20px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .stat {
+      background: var(--accent-soft);
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+    }
+    .stat .label {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .stat .value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+    ul { margin: 0; padding-left: 18px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .note {
+      color: var(--warn);
+      font-size: 13px;
+    }
+    footer {
+      padding: 0 40px 36px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media (max-width: 960px) {
+      .grid, .two-col { grid-template-columns: 1fr 1fr; }
+      header, main, footer { padding-left: 18px; padding-right: 18px; }
+    }
+    @media (max-width: 640px) {
+      .grid, .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="banner">SYNTHETIC DEMONSTRATION DATA</div>
+    <h1>Ansible Infrastructure Automation Lab</h1>
+    <p class="subtitle">
+      Standalone synthetic execution summary for portfolio demonstration.
+      Generated at 2026-08-01T12:00:00Z. No real infrastructure data.
+    </p>
+  </header>
+  <main>
+    <section>
+      <h2>Execution summary</h2>
+      <div class="grid">
+        <div class="stat"><span class="label">Hosts</span><span class="value">6</span></div>
+        <div class="stat"><span class="label">Changed</span><span class="value">3</span></div>
+        <div class="stat"><span class="label">Unchanged</span><span class="value">2</span></div>
+        <div class="stat"><span class="label">Failed</span><span class="value">0</span></div>
+      </div>
+      <p style="margin:14px 0 0;color:var(--muted);font-size:14px;">
+        Playbook <strong>playbooks/site.yml</strong> · Apply duration
+        <strong>45.0s</strong> · Sanitized metadata only
+      </p>
+    </section>
+
+    <div class="two-col">
+      <section>
+        <h2>Inventory groups</h2>
+        <p>web, app, database, monitoring, bastion</p>
+        <p class="note">Aliases only — no ansible_host / RFC1918 addresses.</p>
+      </section>
+      <section>
+        <h2>Host count</h2>
+        <p><strong>6</strong> synthetic hosts</p>
+        <ul><li>web01.lab.example.invalid</li><li>web02.lab.example.invalid</li><li>app01.lab.example.invalid</li><li>db01.lab.example.invalid</li><li>mon01.lab.example.invalid</li><li>bastion01.lab.example.invalid</li></ul>
+      </section>
+    </div>
+
+    <section>
+      <h2>Roles</h2>
+      <p>common, package_management, accounts, ssh_hardening, time_sync, logging, automatic_updates, firewall_policy, web_service, service_health</p>
+    </section>
+
+    <div class="two-col">
+      <section>
+        <h2>Changed tasks</h2>
+        <ul><li>web01.lab.example.invalid — Deploy nginx site configuration (web_service)</li><li>web02.lab.example.invalid — Deploy nginx site configuration (web_service)</li><li>app01.lab.example.invalid — Apply application firewall policy (firewall_policy)</li></ul>
+      </section>
+      <section>
+        <h2>Unchanged tasks</h2>
+        <ul><li>db01.lab.example.invalid — Configure remote syslog forwarding (logging)</li><li>web01.lab.example.invalid — Set service account password (accounts)</li></ul>
+      </section>
+    </div>
+
+    <div class="two-col">
+      <section>
+        <h2>Failed tasks</h2>
+        <ul><li>None in this synthetic sample.</li></ul>
+      </section>
+      <section>
+        <h2>Skipped tasks</h2>
+        <ul><li>bastion01.lab.example.invalid — Ensure baseline packages are present (package_management)</li></ul>
+      </section>
+    </div>
+
+    <div class="two-col">
+      <section>
+        <h2>Check-mode</h2>
+        <p>
+          Check sample reported
+          <strong>2</strong> proposed changes and
+          <strong>3</strong> compliant outcomes without applying state.
+        </p>
+      </section>
+      <section>
+        <h2>Idempotence</h2>
+        <p>
+          Second-run sample:
+          <strong>0</strong> changes —
+          passed=true.
+        </p>
+      </section>
+    </div>
+
+    <section>
+      <h2>Drift</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Host</th><th>Role</th><th>Status</th><th>Severity</th><th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>web01.lab.example.invalid</td><td>ssh_hardening</td><td>change_required</td><td>high</td><td>Observed PermitRootLogin differs from desired prohibit-password.</td></tr><tr><td>web02.lab.example.invalid</td><td>firewall_policy</td><td>compliant</td><td>low</td><td>Firewall policy matches desired state.</td></tr><tr><td>app01.lab.example.invalid</td><td>time_sync</td><td>change_required</td><td>medium</td><td>NTP servers list diverges from group_vars.</td></tr><tr><td>db01.lab.example.invalid</td><td>service_health</td><td>unavailable</td><td>medium</td><td>Host unreachable in synthetic check inventory subset.</td></tr><tr><td>mon01.lab.example.invalid</td><td>logging</td><td>skipped</td><td>low</td><td>Role tagged out for monitoring group in this sample run.</td></tr><tr><td>bastion01.lab.example.invalid</td><td>accounts</td><td>failed</td><td>critical</td><td>Synthetic failure: required variable placeholder not provided.</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Security controls</h2>
+      <ul>
+        <li>no_log honored — sensitive task results recorded as REDACTED only</li>
+        <li>No vault values, passwords, SSH keys, or become passwords in reports</li>
+        <li>Runtime reports default to gitignored <code>reports/</code> (AIAL_REPORT_DIR)</li>
+        <li>Sample vault placeholders live in <code>examples/vault.example.yml</code></li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Limitations</h2>
+      <ul>
+        <li>This HTML is synthetic demonstration data for documentation and CI screenshots.</li>
+        <li>Hosts end in <code>.example.invalid</code> and must not resolve on public DNS.</li>
+        <li>Not an Ansible Automation Platform certification artifact.</li>
+      </ul>
+    </section>
+  </main>
+  <footer>
+    salvomazzaglia/ansible-infrastructure-automation-lab · SYNTHETIC DEMONSTRATION DATA
+  </footer>
+</body>
+</html>

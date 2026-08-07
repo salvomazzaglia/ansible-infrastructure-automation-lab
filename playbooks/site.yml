@@ -1,0 +1,151 @@
+---
+# Full desired-state orchestration for the Ansible Infrastructure Automation Lab.
+#
+# Uses hosts: all with preflight gates. Apply against the public synthetic
+# inventory fails because aial_safe_to_apply is false (except check mode).
+#
+# Usage (check / diff only against synthetic inventory):
+#   ansible-playbook -i inventories/synthetic/hosts.yml --check --diff playbooks/site.yml
+
+- name: Site — baseline and security on all hosts
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Apply common baseline
+      ansible.builtin.import_role:
+        name: common
+      tags:
+        - common
+        - baseline
+
+    - name: Apply package management
+      ansible.builtin.import_role:
+        name: package_management
+      tags:
+        - package_management
+        - packages
+        - baseline
+
+    - name: Apply accounts
+      ansible.builtin.import_role:
+        name: accounts
+      tags:
+        - accounts
+        - baseline
+
+    - name: Apply time synchronization
+      ansible.builtin.import_role:
+        name: time_sync
+      tags:
+        - time_sync
+        - baseline
+
+    - name: Apply logging
+      ansible.builtin.import_role:
+        name: logging
+      tags:
+        - logging
+        - baseline
+
+    - name: Apply SSH hardening
+      ansible.builtin.import_role:
+        name: ssh_hardening
+      tags:
+        - ssh_hardening
+        - security
+
+    - name: Apply automatic updates policy
+      ansible.builtin.import_role:
+        name: automatic_updates
+      tags:
+        - automatic_updates
+        - security
+
+    - name: Apply firewall policy
+      ansible.builtin.import_role:
+        name: firewall_policy
+      tags:
+        - firewall_policy
+        - security
+
+- name: Site — web service rolling deployment
+  hosts: web
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Run preflight safety gates for web tier
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Simulate remove host from synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_web_pool_member_state: draining
+      tags:
+        - web_service
+        - rolling
+
+    - name: Record synthetic pool drain
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_web_pool_member_state }}
+      tags:
+        - web_service
+        - rolling
+
+    - name: Apply web service
+      ansible.builtin.import_role:
+        name: web_service
+      tags:
+        - web_service
+
+    - name: Post-apply local health verification
+      ansible.builtin.import_role:
+        name: service_health
+      tags:
+        - service_health
+        - health
+
+    - name: Simulate restore host to synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_web_pool_member_state: in_service
+      tags:
+        - web_service
+        - rolling
+
+    - name: Record synthetic pool restore
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_web_pool_member_state }}
+      tags:
+        - web_service
+        - rolling
+
+- name: Site — final health verification
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates before health
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Run service health checks
+      ansible.builtin.import_role:
+        name: service_health
+      tags:
+        - service_health
+        - health

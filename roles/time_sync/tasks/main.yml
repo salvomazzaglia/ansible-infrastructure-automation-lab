@@ -1,0 +1,105 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.time_sync
+
+- name: Gather package facts for time sync backend detection
+  ansible.builtin.package_facts:
+    manager: auto
+  when: aial_time_manage | bool
+
+- name: Gather service facts for timesyncd detection
+  ansible.builtin.service_facts:
+  when: aial_time_manage | bool
+
+- name: Resolve time sync backend
+  ansible.builtin.set_fact:
+    aial_time_backend: >-
+      {{
+        aial_time_prefer
+        if aial_time_prefer in ['chrony', 'timesyncd']
+        else (
+          'chrony'
+          if ('chrony' in (ansible_facts.packages | default({})))
+          else (
+            'timesyncd'
+            if (
+              'systemd-timesyncd.service' in (ansible_facts.services | default({}))
+              or 'timesyncd.service' in (ansible_facts.services | default({}))
+            )
+            else 'none'
+          )
+        )
+      }}
+  when: aial_time_manage | bool
+
+- name: Report when no time sync backend is available
+  ansible.builtin.debug:
+    msg: >-
+      No chrony or systemd-timesyncd backend detected.
+      Install chrony or enable systemd-timesyncd for time sync management.
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'none'
+
+- name: Ensure chrony configuration parent exists
+  ansible.builtin.file:
+    path: "{{ aial_time_chrony_conf_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'chrony'
+
+- name: Deploy chrony configuration
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: "{{ aial_time_chrony_conf_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart chrony
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'chrony'
+
+- name: Ensure chrony service is enabled and started
+  ansible.builtin.service:
+    name: chrony
+    state: started
+    enabled: true
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'chrony'
+
+- name: Ensure timesyncd drop-in directory exists
+  ansible.builtin.file:
+    path: "{{ aial_time_timesyncd_dropin_path | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'timesyncd'
+
+- name: Deploy systemd-timesyncd drop-in
+  ansible.builtin.template:
+    src: timesyncd.conf.j2
+    dest: "{{ aial_time_timesyncd_dropin_path }}"
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Restart systemd-timesyncd
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'timesyncd'
+
+- name: Ensure systemd-timesyncd is enabled and started
+  ansible.builtin.service:
+    name: systemd-timesyncd
+    state: started
+    enabled: true
+  when:
+    - aial_time_manage | bool
+    - aial_time_backend == 'timesyncd'

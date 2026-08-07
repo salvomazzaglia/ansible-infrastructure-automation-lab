@@ -1,0 +1,10 @@
+# Managed by salvomazzaglia.infrastructure_automation.logging
+[Journal]
+Storage={{ aial_logging_storage }}
+Compress={{ 'yes' if (aial_logging_compress | bool) else 'no' }}
+SystemMaxUse={{ aial_logging_system_max_use }}
+RuntimeMaxUse={{ aial_logging_runtime_max_use }}
+MaxRetentionSec={{ aial_logging_max_retention_sec | int }}
+MaxFileSec={{ aial_logging_max_file_sec | int }}
+ForwardToSyslog={{ 'yes' if (aial_logging_forward_to_syslog | bool) else 'no' }}
+ForwardToWall={{ 'yes' if (aial_logging_forward_to_wall | bool) else 'no' }}

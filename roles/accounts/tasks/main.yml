@@ -1,0 +1,94 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.accounts
+
+- name: Manage laboratory groups
+  ansible.builtin.group:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    system: "{{ item.system | default(false) | bool }}"
+    gid: "{{ item.gid | default(omit) }}"
+  loop: "{{ aial_accounts_groups }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.state | default('present') }}"
+
+- name: Manage laboratory users
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    state: "{{ 'absent' if (item.state | default('present')) == 'absent' else 'present' }}"
+    shell: "{{ item.shell | default('/bin/bash') }}"
+    create_home: "{{ item.create_home | default(true) | bool }}"
+    home: "{{ item.home | default(omit) }}"
+    comment: "{{ item.comment | default('') }}"
+    groups: "{{ aial_accounts_user_groups_csv if aial_accounts_user_groups_csv | length > 0 else omit }}"
+    append: "{{ true if (item.state | default('present')) != 'absent' else omit }}"
+    password_lock: "{{ true if (item.state | default('present')) == 'locked' else omit }}"
+    remove: "{{ true if (item.state | default('present')) == 'absent' else false }}"
+  vars:
+    aial_accounts_user_groups_csv: >-
+      {{
+        '' if (item.state | default('present')) == 'absent'
+        else ((item.groups | default([])) | join(','))
+      }}
+  loop: "{{ aial_accounts_users }}"
+  loop_control:
+    label: "{{ item.name }}:{{ item.state | default('present') }}"
+  when:
+    - item.name is defined
+    - item.name | length > 0
+    - item.name != 'root'
+
+- name: Resolve passwd database for SSH key homes
+  ansible.builtin.getent:
+    database: passwd
+  when: aial_accounts_users | selectattr('ssh_authorized_keys', 'defined') | list | length > 0
+
+- name: Ensure .ssh directories exist for key installation
+  ansible.builtin.file:
+    path: "{{ ansible_facts.getent_passwd[item.name][4] }}/.ssh"
+    state: directory
+    mode: "0700"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+  loop: "{{ aial_accounts_users }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when:
+    - (item.state | default('present')) != 'absent'
+    - item.ssh_authorized_keys is defined
+    - item.ssh_authorized_keys | length > 0
+    - ansible_facts.getent_passwd is defined
+    - item.name in ansible_facts.getent_passwd
+
+- name: Skip placeholder SSH keys (informational)
+  ansible.builtin.debug:
+    msg: >-
+      Skipping synthetic placeholder SSH key for user {{ item.0.name }}.
+      Molecule may inject ephemeral keys via role vars.
+  loop: "{{ aial_accounts_users | subelements('ssh_authorized_keys', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when:
+    - (item.0.state | default('present')) != 'absent'
+    - item.1 is defined
+    - item.1 == aial_accounts_placeholder_key or (item.1 is match('^SYNTHETIC_'))
+
+- name: Install authorized SSH public keys via lineinfile
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_facts.getent_passwd[item.0.name][4] }}/.ssh/authorized_keys"
+    line: "{{ item.1 }}"
+    create: true
+    mode: "0600"
+    owner: "{{ item.0.name }}"
+    group: "{{ item.0.name }}"
+    state: present
+  loop: "{{ aial_accounts_users | subelements('ssh_authorized_keys', skip_missing=True) }}"
+  loop_control:
+    label: "{{ item.0.name }}"
+  when:
+    - (item.0.state | default('present')) != 'absent'
+    - item.1 is defined
+    - item.1 | length > 0
+    - item.1 != aial_accounts_placeholder_key
+    - not (item.1 is match('^SYNTHETIC_'))
+    - ansible_facts.getent_passwd is defined
+    - item.0.name in ansible_facts.getent_passwd

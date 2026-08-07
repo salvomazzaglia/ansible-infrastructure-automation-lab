@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Salvatore Mazzaglia
+  description: journald retention and optional synthetic remote log forwarding.
+  license: MIT
+  min_ansible_version: "2.20"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - logging
+    - journald
+    - rsyslog
+
+dependencies: []

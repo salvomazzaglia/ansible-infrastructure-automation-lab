@@ -1,0 +1,32 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.service_health
+# Variable prefix: aial_health_
+# Local checks only — no remote monitoring, no telemetry.
+
+aial_health_manage: true
+
+aial_health_services:
+  - name: nginx
+    enabled: true
+    state: started
+
+aial_health_http_checks:
+  - name: synthetic-web-root
+    url: http://127.0.0.1/healthz
+    expect_status: 200
+    expect_body_substring: ok
+    timeout: 5
+
+aial_health_expected_files:
+  - path: /var/www/aial-synthetic/index.html
+    state: file
+    mode: "0644"
+  - path: /etc/aial/managed.marker
+    state: file
+
+aial_health_config_validations:
+  - name: nginx-config
+    command: nginx -t
+    expect_rc: 0
+
+aial_health_fail_on_error: true

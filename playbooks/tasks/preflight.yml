@@ -1,0 +1,66 @@
+---
+# playbooks/tasks/preflight.yml
+# Shared preflight gates for salvomazzaglia.infrastructure_automation
+# Include from playbooks before applying roles.
+
+- name: Require explicitly selected inventory
+  ansible.builtin.assert:
+    that:
+      - ansible_play_hosts_all | length > 0
+      - inventory_hostname is defined
+      - inventory_hostname | length > 0
+    fail_msg: >-
+      Inventory must be explicitly selected. No empty inventory allowed.
+    success_msg: "Inventory host {{ inventory_hostname }} selected."
+
+- name: Assert supported OS family is Debian
+  ansible.builtin.assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: >-
+      Unsupported OS family '{{ ansible_os_family }}'.
+      This collection targets Debian/Ubuntu only.
+    success_msg: "OS family Debian confirmed."
+
+- name: Assert aial_environment is an allowed synthetic value
+  ansible.builtin.assert:
+    that:
+      - aial_environment is defined
+      - aial_environment in ['synthetic', 'lab', 'authorized', 'molecule']
+    fail_msg: >-
+      aial_environment must be one of synthetic|lab|authorized|molecule
+      (got '{{ aial_environment | default('UNDEFINED') }}').
+    success_msg: "Environment '{{ aial_environment }}' accepted."
+
+- name: Gate destructive apply behind aial_safe_to_apply
+  ansible.builtin.assert:
+    that:
+      - aial_safe_to_apply | default(false) | bool
+    fail_msg: >-
+      aial_safe_to_apply must be true for apply runs.
+      Check mode may proceed with aial_safe_to_apply=false.
+    success_msg: "aial_safe_to_apply is true; apply permitted."
+  when: not ansible_check_mode
+
+- name: Allow check mode when aial_safe_to_apply is false
+  ansible.builtin.debug:
+    msg: >-
+      Check mode active with aial_safe_to_apply={{ aial_safe_to_apply | default(false) }}.
+      Apply gates are skipped in check mode.
+  when: ansible_check_mode | bool
+
+- name: Reject accidental localhost unless molecule environment
+  ansible.builtin.assert:
+    that:
+      - inventory_hostname not in ['localhost', '127.0.0.1']
+      - ansible_connection | default('ssh') != 'local'
+    fail_msg: >-
+      Refusing localhost/local connection outside molecule.
+      Set aial_environment=molecule for ephemeral local Molecule runs.
+    success_msg: "Target is not accidental localhost."
+  when: aial_environment | default('') != 'molecule'
+
+- name: Allow localhost for molecule environment
+  ansible.builtin.debug:
+    msg: "Molecule environment — localhost/local connection permitted."
+  when: aial_environment | default('') == 'molecule'

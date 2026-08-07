@@ -1,0 +1,22 @@
+---
+# Read-only service health verification.
+# Does not include state-changing roles. Preflight is still used to reject
+# accidental localhost and unsupported environments.
+
+- name: Service health verification
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Run service health checks
+      ansible.builtin.import_role:
+        name: service_health
+      tags:
+        - service_health
+        - health

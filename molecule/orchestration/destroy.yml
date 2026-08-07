@@ -1,0 +1,44 @@
+---
+# Destroy ephemeral orchestration containers and network.
+
+- name: Destroy Molecule orchestration containers
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    aial_molecule_network: aial-molecule-orchestration
+    aial_molecule_targets: "{{ groups['web'] | default(groups['molecule'] | default([])) }}"
+  tasks:
+    - name: Remove ephemeral Molecule containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        state: absent
+        force_kill: true
+        keep_volumes: false
+      loop: "{{ aial_molecule_targets }}"
+      loop_control:
+        label: "{{ item }}"
+      when: aial_molecule_targets | length > 0
+
+    - name: Remove ephemeral Molecule Docker network
+      community.docker.docker_network:
+        name: "{{ aial_molecule_network }}"
+        state: absent
+        force: true
+
+    - name: Confirm no residual orchestration containers
+      ansible.builtin.command:
+        cmd: docker ps -aq --filter label=scenario=orchestration --filter label=aial_ephemeral=true
+      register: aial_molecule_residual
+      # intentional: read-only check; no host change expected
+      changed_when: false
+      failed_when: false
+
+    - name: Assert residual filter is empty
+      ansible.builtin.assert:
+        that:
+          - (aial_molecule_residual.stdout | trim | length) == 0
+        fail_msg: >-
+          Residual orchestration Molecule containers still present:
+          {{ aial_molecule_residual.stdout }}
+      when: aial_molecule_residual is defined

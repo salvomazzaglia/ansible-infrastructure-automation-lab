@@ -1,0 +1,125 @@
+---
+# Verify serial web orchestration outcomes on both synthetic targets.
+
+- name: Verify orchestration Molecule outcomes
+  hosts: web
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Assert two web targets participated
+      ansible.builtin.assert:
+        that:
+          - groups['web'] | length >= 2
+        fail_msg: Orchestration verify requires at least two web hosts.
+
+    - name: Stat web artifacts
+      ansible.builtin.stat:
+        path: "{{ item }}"
+      loop:
+        - /var/www/aial-synthetic/index.html
+        - /var/www/aial-synthetic/pool-state.txt
+        - /etc/nginx/sites-available/aial-synthetic
+        - /etc/nginx/sites-enabled/aial-synthetic
+        - /etc/aial/managed.marker
+        - /opt/aial/state/pool-transition-drain.txt
+        - /opt/aial/state/pool-transition.txt
+        - /etc/aial/firewall/rendered.nft
+      register: aial_orch_stats
+
+    - name: Assert web artifacts exist
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists | bool
+        fail_msg: "Missing orchestration artifact {{ item.item }}"
+      loop: "{{ aial_orch_stats.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Read index page
+      ansible.builtin.slurp:
+        src: /var/www/aial-synthetic/index.html
+      register: aial_orch_index
+
+    - name: Assert page branding and per-host body
+      ansible.builtin.assert:
+        that:
+          - "'ANSIBLE INFRASTRUCTURE AUTOMATION LAB' in (aial_orch_index.content | b64decode)"
+          - aial_web_page_body in (aial_orch_index.content | b64decode)
+        fail_msg: Index page missing branding or host-specific body.
+
+    - name: Read pool-state metadata
+      ansible.builtin.slurp:
+        src: /var/www/aial-synthetic/pool-state.txt
+      register: aial_orch_pool
+
+    - name: Assert pool-state from web_service role
+      ansible.builtin.assert:
+        that:
+          - "'member_state=in_service' in (aial_orch_pool.content | b64decode)"
+          - "'pool=molecule-web-pool' in (aial_orch_pool.content | b64decode)"
+        fail_msg: Pool state file does not show in_service member state.
+
+    - name: Read pool transition marker
+      ansible.builtin.slurp:
+        src: /opt/aial/state/pool-transition.txt
+      register: aial_orch_transition
+
+    - name: Assert final transition phase is restore
+      ansible.builtin.assert:
+        that:
+          - "'phase=restore' in (aial_orch_transition.content | b64decode)"
+          - "'member_state=in_service' in (aial_orch_transition.content | b64decode)"
+          - "'last_transition=restore' in (aial_orch_transition.content | b64decode)"
+        fail_msg: Pool transition marker was not left in restore/in_service state.
+
+    - name: Read drain transition marker
+      ansible.builtin.slurp:
+        src: /opt/aial/state/pool-transition-drain.txt
+      register: aial_orch_drain
+
+    - name: Assert drain transition was simulated
+      ansible.builtin.assert:
+        that:
+          - "'phase=drain' in (aial_orch_drain.content | b64decode)"
+          - "'simulated_member_state=draining' in (aial_orch_drain.content | b64decode)"
+        fail_msg: Drain transition marker missing.
+
+    - name: Validate nginx configuration
+      ansible.builtin.command:
+        cmd: nginx -t
+      # intentional: read-only check; no host change expected
+      changed_when: false
+
+    - name: Assert nginx service is started
+      ansible.builtin.service:
+        name: nginx
+        state: started
+      check_mode: true
+      register: aial_orch_nginx
+      failed_when: aial_orch_nginx is changed
+
+    - name: Local healthz check
+      ansible.builtin.uri:
+        url: http://127.0.0.1/healthz
+        return_content: true
+        status_code: 200
+      register: aial_orch_healthz
+
+    - name: Assert healthz body
+      ansible.builtin.assert:
+        that:
+          - "'ok' in aial_orch_healthz.content"
+        fail_msg: healthz endpoint did not return ok.
+
+    - name: Local index HTTP check
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        return_content: true
+        status_code: 200
+      register: aial_orch_http
+
+    - name: Assert HTTP index contains host body
+      ansible.builtin.assert:
+        that:
+          - aial_web_page_body in aial_orch_http.content
+        fail_msg: HTTP index missing host-specific page body.

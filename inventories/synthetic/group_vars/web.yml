@@ -1,0 +1,60 @@
+---
+# Web tier overrides — synthetic nginx demonstration service.
+
+aial_web_manage: true
+aial_web_package: nginx
+aial_web_service_name: nginx
+aial_web_listen_port: 80
+aial_web_rolling_enabled: true
+aial_web_rolling_batch_size: 1
+aial_web_pool_name: synthetic-web-pool
+aial_web_pool_member_state: in_service
+aial_web_page_title: ANSIBLE INFRASTRUCTURE AUTOMATION LAB
+aial_web_page_body: SYNTHETIC DEMONSTRATION SERVICE
+
+aial_packages_present:
+  - ca-certificates
+  - curl
+  - gnupg
+  - vim-tiny
+  - nginx
+
+aial_firewall_rules:
+  - id: allow-ssh-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 22
+    source: 203.0.113.0/24
+    comment: Synthetic lab SSH from documentation TEST-NET-3
+  - id: allow-http-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 80
+    source: any
+    comment: Synthetic HTTP for demo web service
+
+aial_health_services:
+  - name: nginx
+    enabled: true
+    state: started
+
+aial_health_http_checks:
+  - name: synthetic-web-root
+    url: http://127.0.0.1/healthz
+    expect_status: 200
+    expect_body_substring: ok
+    timeout: 5
+
+aial_health_expected_files:
+  - path: /var/www/aial-synthetic/index.html
+    state: file
+    mode: "0644"
+  - path: /etc/aial/managed.marker
+    state: file
+
+aial_health_config_validations:
+  - name: nginx-config
+    command: nginx -t
+    expect_rc: 0

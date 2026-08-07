@@ -1,0 +1,104 @@
+---
+# tasks file for salvomazzaglia.infrastructure_automation.service_health
+
+- name: Ensure managed services match desired state
+  ansible.builtin.service:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('started') }}"
+    enabled: "{{ item.enabled | default(true) | bool }}"
+  loop: "{{ aial_health_services }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: aial_health_manage | bool
+
+- name: Perform local HTTP health checks
+  ansible.builtin.uri:
+    url: "{{ item.url }}"
+    method: GET
+    status_code: "{{ item.expect_status | default(200) | int }}"
+    return_content: true
+    timeout: "{{ item.timeout | default(5) | int }}"
+  loop: "{{ aial_health_http_checks }}"
+  loop_control:
+    label: "{{ item.name | default(item.url) }}"
+  register: aial_health_http_results
+  ignore_errors: "{{ not (aial_health_fail_on_error | bool) }}"
+  when:
+    - aial_health_manage | bool
+    - aial_health_http_checks | length > 0
+
+- name: Assert HTTP response body substrings
+  ansible.builtin.assert:
+    that:
+      - item.expect_body_substring is not defined
+        or item.expect_body_substring in (aial_health_http_results.results[idx].content | default(''))
+    fail_msg: >-
+      HTTP health check {{ item.name | default(item.url) }} missing expected
+      substring '{{ item.expect_body_substring | default('') }}'.
+  loop: "{{ aial_health_http_checks }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | default(item.url) }}"
+  when:
+    - aial_health_manage | bool
+    - aial_health_http_checks | length > 0
+    - aial_health_http_results is defined
+    - aial_health_http_results.results is defined
+    - aial_health_fail_on_error | bool
+
+- name: Stat expected files
+  ansible.builtin.stat:
+    path: "{{ item.path }}"
+  loop: "{{ aial_health_expected_files }}"
+  loop_control:
+    label: "{{ item.path }}"
+  register: aial_health_file_stats
+  when:
+    - aial_health_manage | bool
+    - aial_health_expected_files | length > 0
+
+- name: Assert expected files exist with required attributes
+  ansible.builtin.assert:
+    that:
+      - aial_health_file_stats.results[idx].stat.exists | default(false) | bool
+      - (item.state | default('file')) != 'file' or (aial_health_file_stats.results[idx].stat.isreg | default(false) | bool)
+      - (item.state | default('file')) != 'directory' or (aial_health_file_stats.results[idx].stat.isdir | default(false) | bool)
+      - item.mode is not defined or ((aial_health_file_stats.results[idx].stat.mode | default('')) | string) == (item.mode | string)
+    fail_msg: "Expected path {{ item.path }} failed health checks (exists/type/mode)."
+  loop: "{{ aial_health_expected_files }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.path }}"
+  when:
+    - aial_health_manage | bool
+    - aial_health_expected_files | length > 0
+    - aial_health_file_stats is defined
+    - aial_health_file_stats.results is defined
+    - aial_health_fail_on_error | bool
+
+- name: Run local configuration validation commands
+  ansible.builtin.command:
+    cmd: "{{ item.command }}"
+  loop: "{{ aial_health_config_validations }}"
+  loop_control:
+    label: "{{ item.name | default(item.command) }}"
+  register: aial_health_config_results
+  # intentional: read-only check; no host change expected
+  changed_when: false
+  failed_when:
+    - aial_health_fail_on_error | bool
+    - (aial_health_config_results.rc | default(1) | int) != (item.expect_rc | default(0) | int)
+  when:
+    - aial_health_manage | bool
+    - aial_health_config_validations | length > 0
+
+- name: Summarize local health results
+  ansible.builtin.debug:
+    msg: >-
+      Local service health checks completed
+      (services={{ aial_health_services | length }},
+      http={{ aial_health_http_checks | length }},
+      files={{ aial_health_expected_files | length }},
+      config={{ aial_health_config_validations | length }}).
+      No remote monitoring or telemetry was performed.
+  when: aial_health_manage | bool

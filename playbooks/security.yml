@@ -1,0 +1,38 @@
+---
+# Security hardening playbook.
+# Roles: ssh_hardening, automatic_updates, firewall_policy
+#
+# Preflight required. Apply against synthetic inventory is blocked unless
+# aial_safe_to_apply is true (check mode allowed).
+
+- name: Security hardening
+  hosts: all
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Apply SSH hardening
+      ansible.builtin.import_role:
+        name: ssh_hardening
+      tags:
+        - ssh_hardening
+        - security
+
+    - name: Apply automatic updates policy
+      ansible.builtin.import_role:
+        name: automatic_updates
+      tags:
+        - automatic_updates
+        - security
+
+    - name: Apply firewall policy
+      ansible.builtin.import_role:
+        name: firewall_policy
+      tags:
+        - firewall_policy
+        - security

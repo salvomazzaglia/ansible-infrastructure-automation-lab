@@ -1,0 +1,3 @@
+---
+# handlers file for salvomazzaglia.infrastructure_automation.common
+# No handlers required; role tasks are idempotent file/system operations.

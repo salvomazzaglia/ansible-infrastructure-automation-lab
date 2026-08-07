@@ -1,0 +1,93 @@
+---
+argument_specs:
+  main:
+    short_description: Local service health verification
+    description:
+      - Ensures services, performs local HTTP checks, verifies files/permissions,
+        and runs config validation commands.
+      - No remote monitoring and no telemetry.
+    options:
+      aial_health_manage:
+        type: bool
+        required: false
+        default: true
+      aial_health_fail_on_error:
+        type: bool
+        required: false
+        default: true
+      aial_health_services:
+        type: list
+        elements: dict
+        required: false
+        options:
+          name:
+            type: str
+            required: true
+          enabled:
+            type: bool
+            required: false
+            default: true
+          state:
+            type: str
+            required: false
+            default: started
+            choices:
+              - started
+              - stopped
+              - restarted
+              - reloaded
+      aial_health_http_checks:
+        type: list
+        elements: dict
+        required: false
+        options:
+          name:
+            type: str
+            required: false
+          url:
+            type: str
+            required: true
+          expect_status:
+            type: int
+            required: false
+            default: 200
+          expect_body_substring:
+            type: str
+            required: false
+          timeout:
+            type: int
+            required: false
+            default: 5
+      aial_health_expected_files:
+        type: list
+        elements: dict
+        required: false
+        options:
+          path:
+            type: str
+            required: true
+          state:
+            type: str
+            required: false
+            default: file
+            choices:
+              - file
+              - directory
+          mode:
+            type: str
+            required: false
+      aial_health_config_validations:
+        type: list
+        elements: dict
+        required: false
+        options:
+          name:
+            type: str
+            required: false
+          command:
+            type: str
+            required: true
+          expect_rc:
+            type: int
+            required: false
+            default: 0

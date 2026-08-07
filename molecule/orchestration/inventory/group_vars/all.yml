@@ -1,0 +1,51 @@
+---
+# Molecule-only safety gates for orchestration scenario.
+aial_environment: molecule
+aial_safe_to_apply: true
+
+aial_common_manage_hostname: false
+aial_common_timezone: UTC
+aial_common_manage_motd: true
+aial_common_manage_banner: true
+
+aial_packages_present:
+  - ca-certificates
+  - curl
+  - gnupg
+  - vim-tiny
+  - nginx
+aial_packages_absent: []
+aial_packages_update_cache: true
+aial_packages_cache_valid_time: 3600
+aial_packages_held: []
+
+aial_accounts_groups: []
+aial_accounts_users: []
+
+aial_time_manage: false
+aial_logging_manage: false
+aial_ssh_manage: false
+aial_autoupdate_manage: false
+
+aial_firewall_manage: true
+aial_firewall_apply: false
+aial_firewall_default_inbound: drop
+aial_firewall_default_outbound: accept
+aial_firewall_rules:
+  - id: allow-http-lab
+    direction: inbound
+    action: accept
+    protocol: tcp
+    port: 80
+    source: any
+    comment: Synthetic HTTP for Molecule web service
+
+aial_molecule_command: /lib/systemd/systemd
+aial_molecule_privileged: true
+aial_molecule_cgroupns_mode: host
+aial_molecule_volumes:
+  - /sys/fs/cgroup:/sys/fs/cgroup:rw
+aial_molecule_tmpfs:
+  - /run
+  - /run/lock
+  - /tmp

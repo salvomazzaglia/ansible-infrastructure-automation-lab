@@ -1,0 +1,68 @@
+---
+# Rolling web service deployment demonstration.
+#
+# serial: 1
+# Workflow per host:
+#   preflight → simulate pool drain → web_service → health → simulate pool restore
+#
+# There is no real load balancer. Pool transitions are synthetic orchestration
+# state only.
+#
+#   ansible-playbook -i inventories/synthetic/hosts.yml --check --diff playbooks/web.yml
+
+- name: Rolling web service deployment
+  hosts: web
+  gather_facts: true
+  become: true
+  serial: 1
+  tasks:
+    - name: Run preflight safety gates
+      ansible.builtin.import_tasks: tasks/preflight.yml
+      tags:
+        - always
+        - preflight
+
+    - name: Simulate remove host from synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_web_pool_member_state: draining
+      tags:
+        - web_service
+        - rolling
+
+    - name: Record synthetic pool drain
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_web_pool_member_state }}
+      tags:
+        - web_service
+        - rolling
+
+    - name: Apply web service role
+      ansible.builtin.import_role:
+        name: web_service
+      tags:
+        - web_service
+
+    - name: Post-deploy local health verification
+      ansible.builtin.import_role:
+        name: service_health
+      tags:
+        - service_health
+        - health
+
+    - name: Simulate restore host to synthetic load-balancer pool
+      ansible.builtin.set_fact:
+        aial_web_pool_member_state: in_service
+      tags:
+        - web_service
+        - rolling
+
+    - name: Record synthetic pool restore
+      ansible.builtin.debug:
+        msg: >-
+          Synthetic LB pool '{{ aial_web_pool_name }}':
+          member {{ inventory_hostname }} -> {{ aial_web_pool_member_state }}
+      tags:
+        - web_service
+        - rolling

@@ -1,0 +1,38 @@
+# Managed by salvomazzaglia.infrastructure_automation.firewall_policy
+# Synthetic demonstration policy - documentation-safe scopes only.
+# Applied only when aial_firewall_apply=true. Load with: nft -f <file>
+# (No shebang: ansible-test shebang rules disallow non-module interpreters.)
+
+flush ruleset
+
+table inet aial_filter {
+  chain input {
+    type filter hook input priority 0; policy {{ aial_firewall_default_inbound }};
+    ct state established,related accept
+    iif "lo" accept
+{% for rule in aial_firewall_rules if rule.direction == 'inbound' %}
+    # {{ rule.id }} — {{ rule.comment | default('') }}
+{% if rule.protocol | lower == 'icmp' %}
+    ip protocol icmp {{ 'ip saddr ' + rule.source if rule.source != 'any' else '' }} {{ rule.action }}
+{% else %}
+    {{ rule.protocol | lower }} dport {{ rule.port }} {{ 'ip saddr ' + rule.source if rule.source != 'any' else '' }} {{ rule.action }}
+{% endif %}
+{% endfor %}
+  }
+
+  chain output {
+    type filter hook output priority 0; policy {{ aial_firewall_default_outbound }};
+{% for rule in aial_firewall_rules if rule.direction == 'outbound' %}
+    # {{ rule.id }} — {{ rule.comment | default('') }}
+{% if rule.protocol | lower == 'icmp' %}
+    ip protocol icmp {{ 'ip daddr ' + rule.source if rule.source != 'any' else '' }} {{ rule.action }}
+{% else %}
+    {{ rule.protocol | lower }} dport {{ rule.port }} {{ 'ip daddr ' + rule.source if rule.source != 'any' else '' }} {{ rule.action }}
+{% endif %}
+{% endfor %}
+  }
+
+  chain forward {
+    type filter hook forward priority 0; policy drop;
+  }
+}

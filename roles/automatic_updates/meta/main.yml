@@ -1,0 +1,19 @@
+---
+galaxy_info:
+  author: Salvatore Mazzaglia
+  description: Debian/Ubuntu unattended-upgrades policy without email or CI reboots.
+  license: MIT
+  min_ansible_version: "2.20"
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+  galaxy_tags:
+    - updates
+    - security
+    - apt
+
+dependencies: []

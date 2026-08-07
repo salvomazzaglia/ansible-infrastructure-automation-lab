@@ -1,0 +1,29 @@
+---
+# defaults file for salvomazzaglia.infrastructure_automation.accounts
+# Variable prefix: aial_accounts_
+# No passwords. No root password changes.
+# SSH keys: tracked examples use SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER
+# and must NOT be installed. Molecule may inject ephemeral real keys via vars.
+
+aial_accounts_groups:
+  - name: aial_operators
+    state: present
+    system: false
+  - name: aial_auditors
+    state: present
+    system: false
+
+aial_accounts_users:
+  - name: aial_ops
+    state: present
+    groups:
+      - aial_operators
+    shell: /bin/bash
+    create_home: true
+    home: /home/aial_ops
+    comment: Synthetic lab operator account
+    # Placeholder is intentionally invalid and will be skipped by tasks
+    ssh_authorized_keys:
+      - SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER
+
+aial_accounts_placeholder_key: SYNTHETIC_SSH_PUBLIC_KEY_PLACEHOLDER

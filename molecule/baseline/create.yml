@@ -1,0 +1,93 @@
+---
+# Create ephemeral Docker instances for the baseline scenario.
+# Uses community.docker (molecule-plugins[docker] dependency surface).
+# Images are digest-pinned; containers are disposable only.
+
+- name: Create Molecule baseline containers
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    aial_molecule_network: aial-molecule-baseline
+    aial_molecule_targets: "{{ groups['molecule'] | default([]) }}"
+  tasks:
+    - name: Assert Molecule inventory defines targets
+      ansible.builtin.assert:
+        that:
+          - aial_molecule_targets | length > 0
+        fail_msg: No hosts found in inventory group 'molecule'.
+
+    - name: Create ephemeral Molecule Docker network
+      community.docker.docker_network:
+        name: "{{ aial_molecule_network }}"
+        state: present
+
+    - name: Build local Ubuntu systemd image FROM pinned digest
+      community.docker.docker_image:
+        name: "{{ hostvars[item].aial_molecule_local_image }}"
+        source: build
+        force_source: false
+        build:
+          path: "{{ molecule_scenario_directory }}"
+          dockerfile: Dockerfile.ubuntu2404
+          pull: true
+      loop: "{{ aial_molecule_targets }}"
+      loop_control:
+        label: "{{ item }}"
+      when: hostvars[item].aial_molecule_image_kind | default('') == 'ubuntu_systemd'
+
+    - name: Build local Debian systemd image FROM pinned slim digest
+      community.docker.docker_image:
+        name: "{{ hostvars[item].aial_molecule_local_image }}"
+        source: build
+        force_source: false
+        build:
+          path: "{{ molecule_scenario_directory }}"
+          dockerfile: Dockerfile.debian12
+          pull: true
+      loop: "{{ aial_molecule_targets }}"
+      loop_control:
+        label: "{{ item }}"
+      when: hostvars[item].aial_molecule_image_kind | default('') == 'debian_slim_systemd'
+
+    - name: Create ephemeral Molecule containers
+      community.docker.docker_container:
+        name: "{{ item }}"
+        image: "{{ hostvars[item].aial_molecule_local_image }}"
+        state: started
+        recreate: true
+        detach: true
+        interactive: false
+        tty: false
+        privileged: "{{ hostvars[item].aial_molecule_privileged | default(false) }}"
+        cgroupns_mode: "{{ hostvars[item].aial_molecule_cgroupns_mode | default(omit) }}"
+        command: "{{ hostvars[item].aial_molecule_command | default(omit) }}"
+        volumes: "{{ hostvars[item].aial_molecule_volumes | default(omit) }}"
+        tmpfs: "{{ hostvars[item].aial_molecule_tmpfs | default(omit) }}"
+        env:
+          container: docker
+        networks:
+          - name: "{{ aial_molecule_network }}"
+        comparisons:
+          networks: strict
+        labels:
+          owner: molecule
+          scenario: baseline
+          aial_ephemeral: "true"
+          aial_safe: "true"
+      loop: "{{ aial_molecule_targets }}"
+      loop_control:
+        label: "{{ item }}"
+
+    - name: Wait for containers to accept docker exec
+      ansible.builtin.command:
+        cmd: docker exec {{ item }} true
+      register: aial_molecule_exec_ready
+      retries: 30
+      delay: 2
+      until: aial_molecule_exec_ready.rc == 0
+      # intentional: read-only check; no host change expected
+      changed_when: false
+      loop: "{{ aial_molecule_targets }}"
+      loop_control:
+        label: "{{ item }}"
