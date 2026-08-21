@@ -2,7 +2,7 @@
 # Pin ranges verified at implementation time (2026-08).
 ansible-core>=2.20.7,<2.22.0
 ansible-lint==26.6.0
-molecule==26.6.0
+molecule==26.8.0
 molecule-plugins[docker]==26.7.15
 yamllint==1.38.0
 pytest==8.4.1
